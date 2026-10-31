@@ -1,0 +1,2329 @@
+<!DOCTYPE html>
+<html lang="es" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Boxing Punch Machine - Arcade Championship Leaderboard</title>
+  
+  <!-- Pinned CDN scripts with SRI to reject unexpected or modified content. -->
+  <script src="https://cdn.tailwindcss.com/3.4.17" integrity="sha384-igm5BeiBt36UU4gqwWS7imYmelpTsZlQ45FZf+XBn9MuJbn4nQr7yx1yFydocC/K" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.5.1/dist/chart.umd.min.js" integrity="sha384-jb8JQMbMoBUzgWatfe6COACi2ljcDdZQ2OxczGA3bGNeWe+6DChMTBJemed7ZnvJ" crossorigin="anonymous"></script>
+  <!-- Google Fonts: Orbitron & Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Orbitron:wght@600;800;900&display=swap" rel="stylesheet">
+
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            arcade: ['Orbitron', 'sans-serif'],
+            sans: ['Inter', 'sans-serif']
+          },
+          colors: {
+            punch: {
+              red: '#ff1a4b',
+              glow: '#ff0055',
+              gold: '#ffb703',
+              cyan: '#00f2fe',
+              dark: '#0a0b10',
+              panel: '#121520',
+              card: '#181d2c'
+            }
+          },
+          boxShadow: {
+            'neon-red': '0 0 25px -3px rgba(255, 26, 75, 0.45)',
+            'neon-gold': '0 0 25px -3px rgba(255, 183, 3, 0.45)',
+            'neon-cyan': '0 0 25px -3px rgba(0, 242, 254, 0.45)'
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    /* Custom styling for arcade atmosphere */
+    body {
+      background-color: #08090d;
+      background-image: 
+        radial-gradient(circle at 15% 20%, rgba(255, 26, 75, 0.08) 0%, transparent 40%),
+        radial-gradient(circle at 85% 80%, rgba(0, 242, 254, 0.08) 0%, transparent 40%),
+        linear-gradient(rgba(18, 21, 32, 0.4) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(18, 21, 32, 0.4) 1px, transparent 1px);
+      background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    }
+
+    .glow-text-red {
+      text-shadow: 0 0 12px rgba(255, 26, 75, 0.7);
+    }
+    .glow-text-gold {
+      text-shadow: 0 0 12px rgba(255, 183, 3, 0.7);
+    }
+    .glow-text-cyan {
+      text-shadow: 0 0 12px rgba(0, 242, 254, 0.7);
+    }
+
+    /* Scrollbar style */
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+    ::-webkit-scrollbar-track {
+      background: #0d0f18;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: #252b40;
+      border-radius: 4px;
+    }
+    ::-webkit-scrollbar-thumb:hover {
+      background: #ff1a4b;
+    }
+  </style>
+</head>
+
+<body class="text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-punch-red selection:text-white">
+
+  <!-- TOP ARCADE HEADER -->
+  <header class="border-b border-slate-800 bg-punch-panel/90 backdrop-blur sticky top-0 z-40 px-4 lg:px-8 py-3 shadow-xl">
+    <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+      
+      <!-- Logo and Machine Title -->
+      <div class="flex items-center gap-3">
+        <div class="w-12 h-12 rounded-xl bg-gradient-to-tr from-punch-red to-orange-500 flex items-center justify-center shadow-neon-red ring-2 ring-red-500/40">
+          <svg class="w-7 h-7 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs font-arcade tracking-widest text-punch-red uppercase px-2 py-0.5 bg-red-950/60 rounded border border-red-500/30">Punch Machine</span>
+            <span class="inline-block w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
+            <span class="text-[11px] text-emerald-400 font-mono">ARCADE LIVE</span>
+          </div>
+          <h1 class="text-xl md:text-2xl font-black font-arcade tracking-tight text-white flex items-center gap-2">
+            STRIKE FORCE <span class="text-transparent bg-clip-text bg-gradient-to-r from-punch-red via-punch-gold to-punch-cyan">LEADERBOARD</span>
+          </h1>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex flex-wrap items-center gap-2.5">
+        <button id="btnOpenPunchModal" class="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gradient-to-r from-punch-red to-rose-600 hover:from-rose-500 hover:to-punch-red text-white font-bold text-sm shadow-neon-red active:scale-95 transition-all">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+          Registrar Golpe
+        </button>
+
+        <button id="btnOpenUserModal" class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm active:scale-95 transition-all">
+          <svg class="w-4 h-4 text-punch-cyan" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+          </svg>
+          + Amigo / Boxeador
+        </button>
+
+        <button id="btnOpenMachineModal" class="flex items-center gap-2 px-3.5 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm active:scale-95 transition-all">
+          🕹️ Máquinas
+        </button>
+
+        <!-- Backup & Actions Menu -->
+        <div class="relative inline-block text-left" id="moreActionsDropdown">
+          <button id="btnMoreActions" class="flex items-center gap-1.5 px-3 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 font-medium text-xs">
+            <svg class="w-4 h-4 text-punch-gold" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+            </svg>
+            <span>Respaldos (JSON)</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+          <div id="moreMenu" class="hidden absolute right-0 mt-2 w-56 rounded-xl bg-slate-900 border border-slate-700 shadow-2xl py-1.5 text-xs z-50">
+            <button id="btnExportJSON" class="w-full text-left px-4 py-2.5 hover:bg-slate-800 text-slate-200 flex items-center gap-2">
+              <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+              <span>Exportar BBDD (.JSON)</span>
+            </button>
+            <label for="importFileInput" class="w-full text-left px-4 py-2.5 hover:bg-slate-800 text-slate-200 flex items-center gap-2 cursor-pointer">
+              <svg class="w-4 h-4 text-punch-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+              <span>Importar / Restaurar (.JSON)</span>
+            </label>
+            <input type="file" id="importFileInput" accept=".json,application/json" class="hidden">
+            <div class="border-t border-slate-800 my-1"></div>
+            <button id="btnResetData" class="w-full text-left px-4 py-2.5 hover:bg-rose-950/60 text-red-400 flex items-center gap-2">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+              <span>Borrar todos los datos</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTAINER -->
+  <main class="max-w-7xl mx-auto px-4 lg:px-8 py-6 w-full flex-grow space-y-8">
+
+    <!-- DATE FILTER & HIGHLIGHT BANNER -->
+    <div class="bg-gradient-to-r from-slate-900 via-punch-panel to-slate-900 border border-slate-800/80 rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4 shadow-xl">
+      <div class="flex items-center gap-3">
+        <div class="p-3 bg-punch-red/10 border border-punch-red/30 rounded-xl">
+          <svg class="w-6 h-6 text-punch-red" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+          </svg>
+        </div>
+        <div>
+          <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400">Jornada Activa de Combate</h2>
+          <div class="flex items-center gap-2">
+            <span class="text-lg md:text-xl font-bold font-arcade text-white" id="selectedDateDisplay">--</span>
+            <span class="text-xs bg-slate-800 text-slate-300 px-2 py-0.5 rounded-full border border-slate-700" id="totalPunchesToday">0 impactos</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Date selector picker -->
+      <div class="flex flex-col sm:flex-row items-center gap-3 w-full md:w-auto">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <label for="dateFilter" class="text-xs font-medium text-slate-400">Filtrar Día:</label>
+          <select id="dateFilter" class="bg-slate-800 text-white font-medium text-sm rounded-xl px-4 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-punch-red w-full md:w-48">
+            <!-- Populated by JS -->
+          </select>
+        </div>
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <label for="machineFilter" class="text-xs font-medium text-slate-400">Máquina:</label>
+          <select id="machineFilter" class="bg-slate-800 text-white font-medium text-sm rounded-xl px-4 py-2 border border-slate-700 focus:outline-none focus:ring-2 focus:ring-punch-cyan w-full md:w-56">
+            <!-- Populated by JS -->
+          </select>
+        </div>
+        <p id="machineFilterNote" class="text-[10px] text-slate-500 sm:max-w-52">
+          Vista total: puntajes normalizados como porcentaje del máximo de cada máquina.
+        </p>
+      </div>
+    </div>
+
+    <!-- DAILY PODIUM: 3 SPECIAL CATEGORY CARDS -->
+    <section>
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="font-arcade text-lg font-bold text-slate-200 tracking-wide flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-punch-gold shadow-neon-gold"></span>
+            PODIO & GANADORES DE LA FECHA
+          </h3>
+          <p class="text-xs text-slate-400">Los campeones con las puntuaciones más destructivas del día seleccionado.</p>
+        </div>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+        
+        <!-- CARD 1: OVERALL DAILY CHAMPION -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-punch-gold/15 via-punch-panel to-slate-900 border border-punch-gold/40 p-5 shadow-neon-gold group hover:border-punch-gold transition-all">
+          <div class="absolute -right-4 -top-4 w-28 h-28 bg-punch-gold/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="flex justify-between items-start">
+            <span class="text-[11px] font-arcade tracking-wider uppercase px-2.5 py-1 bg-amber-500/20 text-amber-300 border border-amber-500/40 rounded-lg">
+              👑 CAMPEÓN DEL DÍA
+            </span>
+            <span class="text-2xl">🥇</span>
+          </div>
+          
+          <div class="mt-4">
+            <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Pegada Más Fuerte</div>
+            <div id="champName" class="text-2xl font-black font-arcade text-white tracking-wide mt-1 truncate">--</div>
+          </div>
+
+          <div class="mt-4 flex items-baseline gap-2">
+            <div id="champScore" class="text-4xl font-black font-arcade text-punch-gold glow-text-gold">0</div>
+            <span id="champScoreUnit" class="text-xs text-slate-400 font-mono">PUNTOS</span>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span id="champHandDetail">Mano: --</span>
+            <span id="champAttemptDetail">Intento #--</span>
+          </div>
+        </div>
+
+        <!-- CARD 2: BEST RIGHT HAND -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-punch-red/15 via-punch-panel to-slate-900 border border-punch-red/40 p-5 shadow-neon-red group hover:border-punch-red transition-all">
+          <div class="absolute -right-4 -top-4 w-28 h-28 bg-punch-red/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="flex justify-between items-start">
+            <span class="text-[11px] font-arcade tracking-wider uppercase px-2.5 py-1 bg-red-500/20 text-punch-red border border-red-500/40 rounded-lg">
+              💥 DERECHA DINAMITA
+            </span>
+            <span class="text-2xl">🥊</span>
+          </div>
+          
+          <div class="mt-4">
+            <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Mejor Derecha</div>
+            <div id="bestRightName" class="text-2xl font-black font-arcade text-white tracking-wide mt-1 truncate">--</div>
+          </div>
+
+          <div class="mt-4 flex items-baseline gap-2">
+            <div id="bestRightScore" class="text-4xl font-black font-arcade text-punch-red glow-text-red">0</div>
+            <span id="bestRightScoreUnit" class="text-xs text-slate-400 font-mono">PUNTOS</span>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span>Mano Derecha (Overhand)</span>
+            <span id="bestRightAttempt">Intento #--</span>
+          </div>
+        </div>
+
+        <!-- CARD 3: BEST LEFT HAND -->
+        <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-punch-cyan/15 via-punch-panel to-slate-900 border border-punch-cyan/40 p-5 shadow-neon-cyan group hover:border-punch-cyan transition-all">
+          <div class="absolute -right-4 -top-4 w-28 h-28 bg-punch-cyan/10 rounded-full blur-2xl pointer-events-none"></div>
+          <div class="flex justify-between items-start">
+            <span class="text-[11px] font-arcade tracking-wider uppercase px-2.5 py-1 bg-cyan-500/20 text-punch-cyan border border-cyan-500/40 rounded-lg">
+              ⚡ ZURDA DE ORO
+            </span>
+            <span class="text-2xl">🌪️</span>
+          </div>
+          
+          <div class="mt-4">
+            <div class="text-xs text-slate-400 uppercase tracking-widest font-mono">Mejor Izquierda</div>
+            <div id="bestLeftName" class="text-2xl font-black font-arcade text-white tracking-wide mt-1 truncate">--</div>
+          </div>
+
+          <div class="mt-4 flex items-baseline gap-2">
+            <div id="bestLeftScore" class="text-4xl font-black font-arcade text-punch-cyan glow-text-cyan">0</div>
+            <span id="bestLeftScoreUnit" class="text-xs text-slate-400 font-mono">PUNTOS</span>
+          </div>
+
+          <div class="mt-3 pt-3 border-t border-slate-800 flex items-center justify-between text-xs text-slate-400">
+            <span>Mano Izquierda (Hook)</span>
+            <span id="bestLeftAttempt">Intento #--</span>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- RANKINGS TABS & TABLE -->
+    <section class="bg-punch-panel border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl space-y-5">
+      <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+        <div>
+          <h3 class="font-arcade text-lg font-bold text-white tracking-wide flex items-center gap-2">
+            <svg class="w-5 h-5 text-punch-red" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            TABLA OFICIAL DE CLASIFICACIÓN
+          </h3>
+          <p class="text-xs text-slate-400 mt-0.5">Ordenado por máxima potencia de impacto registrado.</p>
+        </div>
+
+        <!-- Scope & Type selectors -->
+        <div class="flex flex-wrap items-center gap-2">
+          <!-- Time Scope: Daily vs Historic -->
+          <div class="inline-flex p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs font-semibold">
+            <button id="scopeDaily" class="px-3 py-1.5 rounded-lg bg-punch-red text-white shadow transition-all">Ranking del Día</button>
+            <button id="scopeHistoric" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">Histórico Total</button>
+          </div>
+
+          <!-- Hand Category: Right, Left, Combined -->
+          <div class="inline-flex p-1 bg-slate-900 rounded-xl border border-slate-800 text-xs font-semibold">
+            <button id="tabHandRight" class="px-3 py-1.5 rounded-lg bg-slate-800 text-punch-red border border-punch-red/30 transition-all">🥊 Derecha</button>
+            <button id="tabHandLeft" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">⚡ Izquierda</button>
+            <button id="tabHandCombined" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all">🔥 Suma Ambos</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Rankings Table Container -->
+      <div class="overflow-x-auto rounded-xl border border-slate-800/80">
+        <table class="w-full text-left text-sm text-slate-300">
+          <thead class="bg-slate-900/90 text-xs font-arcade uppercase tracking-wider text-slate-400 border-b border-slate-800">
+            <tr>
+              <th class="px-4 py-3.5 text-center w-16">Pos</th>
+              <th class="px-4 py-3.5">Boxeador</th>
+              <th id="rankingScoreHeading" class="px-4 py-3.5 text-right font-bold text-slate-200">Puntaje Máx</th>
+              <th class="px-4 py-3.5 text-center">Mano / Tipo</th>
+              <th class="px-4 py-3.5 text-center">Máquina</th>
+              <th class="px-4 py-3.5 text-center">Nº Intento</th>
+              <th class="px-4 py-3.5 text-center">Fecha</th>
+              <th class="px-4 py-3.5 text-center">Potenciometría</th>
+            </tr>
+          </thead>
+          <tbody id="rankingTableBody" class="divide-y divide-slate-800 bg-slate-950/40 font-mono">
+            <!-- Dynamically populated rows -->
+          </tbody>
+        </table>
+      </div>
+      <div id="tableEmptyState" class="hidden text-center py-10 text-slate-500 font-mono text-sm">
+        No hay registros que coincidan con los filtros seleccionados.
+      </div>
+    </section>
+
+    <!-- SECTION: TROFEOS HUMILLANTES, EGO Y HUMOR NEGRO -->
+    <section class="space-y-4">
+      <div class="flex items-center justify-between">
+        <div>
+          <h3 class="font-arcade text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-punch-gold via-punch-red to-punch-cyan tracking-wide flex items-center gap-2">
+            🏆 GALA DE PREMIOS TÓXICOS & BULLEO OFICIAL
+          </h3>
+          <p class="text-xs text-slate-400">Estadísticas humillantes, egocéntricas y verdades que duelen más que el golpe.</p>
+        </div>
+        <span class="text-[11px] font-mono px-2.5 py-1 rounded bg-red-950/80 text-rose-300 border border-rose-800/50">CERO PIEDAD</span>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+        <!-- PREMIO 1: MANOS DE PLUMA (GOLPE MÁS BAJO) -->
+        <div class="bg-gradient-to-br from-slate-900 via-punch-panel to-slate-950 border border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-600 transition-all">
+          <div class="flex items-start justify-between">
+            <span class="text-3xl">🪶</span>
+            <span class="text-[10px] font-mono bg-slate-800 text-slate-400 px-2 py-0.5 rounded border border-slate-700">HUMILLACIÓN MÁXIMA</span>
+          </div>
+          <div class="mt-3">
+            <h4 class="text-sm font-arcade font-bold text-white tracking-wide">CINTURÓN "MANO DE PLUMA"</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">El impacto más patético y ridículo registrado en la máquina.</p>
+          </div>
+          <div class="mt-4 flex items-baseline justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800/80">
+            <div>
+              <div id="trophyPlumaPlayer" class="text-base font-bold font-arcade text-slate-200">--</div>
+              <div id="trophyPlumaHand" class="text-[10px] text-slate-400 font-mono">Mano: --</div>
+            </div>
+            <div class="text-right">
+              <span id="trophyPlumaScore" class="text-2xl font-black font-arcade text-rose-400">0</span>
+              <span id="trophyPlumaUnit" class="text-[10px] text-slate-500 font-mono block">CARICIA PTS</span>
+            </div>
+          </div>
+          <div class="text-[10px] text-rose-400/80 mt-2 font-mono italic text-center">"Le pegó como pidiéndole perdón al saco."</div>
+        </div>
+
+        <!-- PREMIO 2: EL MACHO ALFA (EL EGOCÉNTRICO) -->
+        <div class="bg-gradient-to-br from-amber-950/20 via-punch-panel to-slate-950 border border-punch-gold/40 p-4 rounded-2xl relative overflow-hidden shadow-neon-gold group hover:border-punch-gold transition-all">
+          <div class="flex items-start justify-between">
+            <span class="text-3xl">🦍</span>
+            <span class="text-[10px] font-mono bg-amber-500/20 text-amber-300 px-2 py-0.5 rounded border border-amber-500/40">EGO INFINITO</span>
+          </div>
+          <div class="mt-3">
+            <h4 class="text-sm font-arcade font-bold text-punch-gold tracking-wide">EL MACHO ALFA DEGRADADOR</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">Récord histórico absoluto de un solo bombazo descomunal.</p>
+          </div>
+          <div class="mt-4 flex items-baseline justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800/80">
+            <div>
+              <div id="trophyAlphaPlayer" class="text-base font-bold font-arcade text-white">--</div>
+              <div id="trophyAlphaHand" class="text-[10px] text-slate-400 font-mono">Mano: --</div>
+            </div>
+            <div class="text-right">
+              <span id="trophyAlphaScore" class="text-2xl font-black font-arcade text-punch-gold glow-text-gold">0</span>
+              <span id="trophyAlphaUnit" class="text-[10px] text-slate-500 font-mono block">DESTRUCCIÓN</span>
+            </div>
+          </div>
+          <div class="text-[10px] text-amber-400/90 mt-2 font-mono italic text-center">"Hará bullying en el grupo de WhatsApp por 6 meses."</div>
+        </div>
+
+        <!-- PREMIO 3: EL COJO / DISCAPACIDAD MOTORA -->
+        <div class="bg-gradient-to-br from-slate-900 via-punch-panel to-slate-950 border border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-600 transition-all">
+          <div class="flex items-start justify-between">
+            <span class="text-3xl">🩼</span>
+            <span class="text-[10px] font-mono bg-purple-950/60 text-purple-300 px-2 py-0.5 rounded border border-purple-800/50">AMPUTACIÓN VIRTUAL</span>
+          </div>
+          <div class="mt-3">
+            <h4 class="text-sm font-arcade font-bold text-white tracking-wide">EL BRAZO DE ADORNO</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">Mayor brecha entre su mejor derecha y su zurda inutilizada.</p>
+          </div>
+          <div class="mt-4 flex items-baseline justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800/80">
+            <div>
+              <div id="trophyAmputadoPlayer" class="text-base font-bold font-arcade text-slate-200">--</div>
+              <div id="trophyAmputadoDetail" class="text-[10px] text-slate-400 font-mono">D: 0 | I: 0</div>
+            </div>
+            <div class="text-right">
+              <span id="trophyAmputadoDiff" class="text-2xl font-black font-arcade text-purple-400">0</span>
+              <span id="trophyAmputadoUnit" class="text-[10px] text-slate-500 font-mono block">PTS DE ABISMO</span>
+            </div>
+          </div>
+          <div class="text-[10px] text-purple-400/80 mt-2 font-mono italic text-center">"Tiene el otro brazo puramente para no doblarse al caminar."</div>
+        </div>
+
+        <!-- PREMIO 4: EL VENDEHUMO / PURA CHIRIPA -->
+        <div class="bg-gradient-to-br from-slate-900 via-punch-panel to-slate-950 border border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-600 transition-all">
+          <div class="flex items-start justify-between">
+            <span class="text-3xl">🤡</span>
+            <span class="text-[10px] font-mono bg-yellow-950/60 text-yellow-300 px-2 py-0.5 rounded border border-yellow-800/50">CHORIZO DE CARTÓN</span>
+          </div>
+          <div class="mt-3">
+            <h4 class="text-sm font-arcade font-bold text-white tracking-wide">EL CHANTA / VENDEHUMO</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">Mayor inconsistencia: un chispazo de suerte y el resto da pena.</p>
+          </div>
+          <div class="mt-4 flex items-baseline justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800/80">
+            <div>
+              <div id="trophyChantaPlayer" class="text-base font-bold font-arcade text-slate-200">--</div>
+              <div id="trophyChantaDetail" class="text-[10px] text-slate-400 font-mono">Máx: 0 vs Mín: 0</div>
+            </div>
+            <div class="text-right">
+              <span id="trophyChantaDiff" class="text-2xl font-black font-arcade text-yellow-400">0</span>
+              <span class="text-[10px] text-slate-500 font-mono block">DELTA BIPOLAR</span>
+            </div>
+          </div>
+          <div class="text-[10px] text-yellow-400/80 mt-2 font-mono italic text-center">"Dice que le dolía la muñeca en los otros tiros."</div>
+        </div>
+
+        <!-- PREMIO 5: EL FRANKENSTEIN AMBIDIESTRO -->
+        <div class="bg-gradient-to-br from-cyan-950/20 via-punch-panel to-slate-950 border border-punch-cyan/40 p-4 rounded-2xl relative overflow-hidden shadow-neon-cyan group hover:border-punch-cyan transition-all">
+          <div class="flex items-start justify-between">
+            <span class="text-3xl">🤖</span>
+            <span class="text-[10px] font-mono bg-cyan-500/20 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/40">SIMETRÍA LETAL</span>
+          </div>
+          <div class="mt-3">
+            <h4 class="text-sm font-arcade font-bold text-punch-cyan tracking-wide">EL FRANKENSTEIN AMBIDIESTRO</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">Peligroso con ambas manos. Pega igual de duro con la zurda.</p>
+          </div>
+          <div class="mt-4 flex items-baseline justify-between bg-slate-950/70 p-3 rounded-xl border border-slate-800/80">
+            <div>
+              <div id="trophyFrankPlayer" class="text-base font-bold font-arcade text-white">--</div>
+              <div id="trophyFrankDetail" class="text-[10px] text-slate-400 font-mono">D: 0 | I: 0</div>
+            </div>
+            <div class="text-right">
+              <span id="trophyFrankRatio" class="text-2xl font-black font-arcade text-punch-cyan glow-text-cyan">0%</span>
+              <span class="text-[10px] text-slate-500 font-mono block">EQUILIBRIO</span>
+            </div>
+          </div>
+          <div class="text-[10px] text-cyan-400/80 mt-2 font-mono italic text-center">"Si le amarran la derecha te noquea igual con la zurda."</div>
+        </div>
+
+        <!-- PREMIO 6: CLIENTE VIP DE TRAUMATOLOGÍA -->
+        <div class="bg-gradient-to-br from-slate-900 via-punch-panel to-slate-950 border border-slate-800 p-4 rounded-2xl relative overflow-hidden group hover:border-slate-600 transition-all">
+          <div class="flex items-start justify-between">
+            <span class="text-3xl">💸</span>
+            <span class="text-[10px] font-mono bg-emerald-950/60 text-emerald-300 px-2 py-0.5 rounded border border-emerald-800/50">TOP 3 FICHAS & SUMATORIA</span>
+          </div>
+          <div class="mt-3">
+            <h4 class="text-sm font-arcade font-bold text-white tracking-wide">DONANTES VIP DEL ARCADE</h4>
+            <p class="text-[11px] text-slate-400 mt-0.5">Top gastadores: ordenado por volumen de golpes y desempate por daño total acumulado.</p>
+          </div>
+          <div class="mt-3 bg-slate-950/70 p-2.5 rounded-xl border border-slate-800/80 space-y-2">
+            <div id="trophySpenderList" class="space-y-1.5 text-xs font-mono">
+              <!-- Dynamically populated top 3 VIP spenders -->
+            </div>
+          </div>
+          <div class="text-[10px] text-emerald-400/80 mt-2 font-mono italic text-center">"Empatados en fichas, manda la sumatoria total de puntos destruidos."</div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- SECTION: ESTADÍSTICAS DE DUDOSA PRESTIGIO -->
+    <section class="space-y-4">
+      <div>
+        <h3 class="font-arcade text-lg font-bold text-transparent bg-clip-text bg-gradient-to-r from-punch-cyan via-punch-gold to-punch-red tracking-wide">
+          🧪 LABORATORIO DE EXCUSAS Y TENDENCIAS
+        </h3>
+        <p class="text-xs text-slate-400 mt-1">Métricas recreativas: comparar solo sesiones de la misma máquina y escala.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <article class="bg-punch-panel border border-slate-800 rounded-2xl p-4">
+          <div class="text-2xl">🔁</div>
+          <h4 class="mt-2 text-sm font-arcade font-bold text-white">EL “AHORA SÍ”</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Cambio promedio del primer al segundo golpe derecho, emparejados por persona y fecha.</p>
+          <div id="rematchDelta" class="mt-3 text-2xl font-black font-arcade text-punch-gold">--</div>
+          <p id="rematchSummary" class="text-[11px] text-slate-400 mt-1">Sin pares de intentos 1–2.</p>
+        </article>
+
+        <article class="bg-punch-panel border border-slate-800 rounded-2xl p-4">
+          <div class="text-2xl">🧮</div>
+          <h4 class="mt-2 text-sm font-arcade font-bold text-white">EL PROMEDIO MIENTE</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Media vs. mediana de todos los golpes; la mediana resiste mejor los bombazos extremos.</p>
+          <div id="meanMedianValue" class="mt-3 text-2xl font-black font-arcade text-punch-cyan">--</div>
+          <p id="meanMedianSummary" class="text-[11px] text-slate-400 mt-1">Sin golpes registrados.</p>
+        </article>
+
+        <article class="bg-punch-panel border border-slate-800 rounded-2xl p-4">
+          <div class="text-2xl">⚖️</div>
+          <h4 class="mt-2 text-sm font-arcade font-bold text-white">ASAMBLEA DE BRAZOS</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Brecha media entre mejores golpes derecho e izquierdo de quienes usaron ambos.</p>
+          <div id="averageHandGap" class="mt-3 text-2xl font-black font-arcade text-purple-300">--</div>
+          <p id="averageHandGapSummary" class="text-[11px] text-slate-400 mt-1">Faltan golpes con ambas manos.</p>
+        </article>
+
+        <article class="bg-punch-panel border border-slate-800 rounded-2xl p-4">
+          <div class="text-2xl">🫨</div>
+          <h4 class="mt-2 text-sm font-arcade font-bold text-white">ÍNDICE DE TEMBLOR</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Desviación estándar de los puntajes: cuánto se dispersan respecto de la media.</p>
+          <div id="scoreDeviation" class="mt-3 text-2xl font-black font-arcade text-rose-300">--</div>
+          <p id="scoreDeviationSummary" class="text-[11px] text-slate-400 mt-1">Sin golpes registrados.</p>
+        </article>
+      </div>
+
+      <div class="bg-punch-panel border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div class="mb-3">
+          <h4 class="font-arcade text-sm font-bold text-white">LA CURVA DEL SACO (¿PROGRESO O PURO HUMO?)</h4>
+          <p class="text-xs text-slate-400">Promedio por fecha y mano. Se necesitan varias sesiones para hablar de tendencia.</p>
+        </div>
+        <div class="h-64 sm:h-72 w-full">
+          <canvas id="sessionTrendChart"></canvas>
+        </div>
+        <p id="sessionTrendSummary" class="text-[11px] text-slate-500 text-center mt-2">Registra sesiones en distintas fechas para ver una evolución.</p>
+      </div>
+    </section>
+
+    <!-- SECTION: CHARTS COMPARISON & METRICS -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      
+      <!-- Visual Chart: Right vs Left Power -->
+      <div class="lg:col-span-2 bg-punch-panel border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between">
+        <div class="flex items-center justify-between mb-3">
+          <div>
+            <h4 class="font-arcade text-sm font-bold text-white tracking-wide">PODER DE PEGADA COMPARATIVO</h4>
+            <p id="comparisonChartDescription" class="text-xs text-slate-400">Mejor golpe por mano y participante, normalizado al máximo de cada máquina.</p>
+          </div>
+          <span class="text-xs font-mono text-slate-400 bg-slate-800/80 px-2 py-1 rounded">Chart.js</span>
+        </div>
+        <div class="h-64 sm:h-72 w-full">
+          <canvas id="punchComparisonChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Arcade Special Badges & Records -->
+      <div class="bg-punch-panel border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col justify-between space-y-4">
+        <div>
+          <h4 class="font-arcade text-sm font-bold text-white tracking-wide mb-1">HALL OF FAME (RÉCORDS)</h4>
+          <p class="text-xs text-slate-400">Hitos históricos de la máquina.</p>
+        </div>
+
+        <div class="space-y-3">
+          <!-- All-time highest punch -->
+          <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl p-2 bg-red-500/10 rounded-lg border border-red-500/20">💣</span>
+              <div>
+                <div class="text-[11px] font-mono text-slate-400 uppercase">Récord Absoluto (All-Time)</div>
+                <div id="allTimeRecordPlayer" class="text-sm font-bold text-white font-arcade">--</div>
+              </div>
+            </div>
+            <div class="text-right font-mono">
+              <div id="allTimeRecordScore" class="text-xl font-black text-punch-red glow-text-red">0</div>
+              <span id="hallScoreUnit" class="text-[10px] text-slate-500">PUNTOS</span>
+            </div>
+          </div>
+
+          <!-- Most symmetrical boxer -->
+          <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl p-2 bg-cyan-500/10 rounded-lg border border-cyan-500/20">⚖️</span>
+              <div>
+                <div class="text-[11px] font-mono text-slate-400 uppercase">Más Ambidiestro (Simetría)</div>
+                <div id="bestSymmetryPlayer" class="text-sm font-bold text-white font-arcade">--</div>
+              </div>
+            </div>
+            <div class="text-right font-mono">
+              <div id="bestSymmetryValue" class="text-xl font-black text-punch-cyan glow-text-cyan">0%</div>
+              <span class="text-[10px] text-slate-500">BALANCE</span>
+            </div>
+          </div>
+
+          <!-- Total punches registered -->
+          <div class="p-3 rounded-xl bg-slate-900 border border-slate-800 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <span class="text-2xl p-2 bg-amber-500/10 rounded-lg border border-amber-500/20">🥊</span>
+              <div>
+                <div class="text-[11px] font-mono text-slate-400 uppercase">Impactos Totales</div>
+                <div class="text-sm font-bold text-white font-arcade">Registrados en la BBDD</div>
+              </div>
+            </div>
+            <div class="text-right font-mono">
+              <div id="totalPunchesCount" class="text-xl font-black text-punch-gold glow-text-gold">0</div>
+              <span class="text-[10px] text-slate-500">GOLPES</span>
+            </div>
+          </div>
+        </div>
+
+        <div id="hallSymmetryCaption" class="text-[11px] text-slate-500 text-center font-mono pt-1">
+          Simetría = (Mejor Zurda / Mejor Derecha) × 100%
+        </div>
+      </div>
+
+    </div>
+
+    <!-- BOXER PROFILE & PERSONAL STATS EXPLORER -->
+    <section class="bg-punch-panel border border-slate-800 rounded-2xl p-5 md:p-6 shadow-xl space-y-6">
+      <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+        <div>
+          <h3 class="font-arcade text-lg font-bold text-white tracking-wide flex items-center gap-2">
+            <svg class="w-5 h-5 text-punch-cyan" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+            FICHA TÉCNICA Y ESTADÍSTICAS POR BOXEADOR
+          </h3>
+          <p class="text-xs text-slate-400">Selecciona un amigo o usuario para auditar su fuerza, balance y evolución de golpes.</p>
+        </div>
+
+        <!-- Boxer Selector dropdown -->
+        <div class="flex items-center gap-3">
+          <label for="selectFighterStats" class="text-xs font-semibold text-slate-400">Elegir Peleador:</label>
+          <select id="selectFighterStats" class="bg-slate-900 border border-slate-700 text-punch-cyan font-arcade text-sm rounded-xl px-4 py-2 focus:ring-2 focus:ring-punch-cyan focus:outline-none">
+            <!-- Dynamically populated -->
+          </select>
+        </div>
+      </div>
+
+      <!-- Grid with individual fighter cards and timeline -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Stat: Max Right -->
+        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+            <span>RÉCORD DIESTRO</span>
+            <span class="text-punch-red font-bold">🥊 DER</span>
+          </div>
+          <div class="mt-2 text-3xl font-black font-arcade text-punch-red glow-text-red" id="userStatMaxRight">0</div>
+          <div class="text-[11px] text-slate-500 mt-1 font-mono" id="userStatMaxRightDate">Sin datos</div>
+        </div>
+
+        <!-- Stat: Max Left -->
+        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+            <span>RÉCORD ZURDO</span>
+            <span class="text-punch-cyan font-bold">⚡ IZQ</span>
+          </div>
+          <div class="mt-2 text-3xl font-black font-arcade text-punch-cyan glow-text-cyan" id="userStatMaxLeft">0</div>
+          <div class="text-[11px] text-slate-500 mt-1 font-mono" id="userStatMaxLeftDate">Sin datos</div>
+        </div>
+
+        <!-- Stat: Power Balance -->
+        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+            <span>BALANCE SIMETRÍA</span>
+            <span class="text-punch-gold font-bold">⚖️ RATIO</span>
+          </div>
+          <div class="mt-2 text-3xl font-black font-arcade text-punch-gold glow-text-gold" id="userStatBalance">0%</div>
+          <div class="text-[11px] text-slate-400 mt-1" id="userStatBalanceComment">Calculando...</div>
+        </div>
+
+        <!-- Stat: Total attempts & Avg -->
+        <div class="bg-slate-900/90 border border-slate-800 p-4 rounded-xl">
+          <div class="flex items-center justify-between text-slate-400 text-xs font-mono">
+            <span>VOLUMEN / MEDIA</span>
+            <span class="text-emerald-400 font-bold">🎯 TOTAL</span>
+          </div>
+          <div class="mt-2 text-3xl font-black font-arcade text-white" id="userStatTotalPunches">0 <span class="text-sm font-mono text-slate-400">golpes</span></div>
+          <div class="text-[11px] text-slate-400 mt-1 font-mono" id="userStatAvgScore">Promedio: 0 pts</div>
+        </div>
+
+      </div>
+
+      <!-- Individual Boxer Punch History Logs -->
+      <div>
+        <h5 class="text-xs font-arcade font-bold uppercase tracking-wider text-slate-400 mb-3">Historial Cronológico de Impactos</h5>
+        <div class="overflow-x-auto rounded-xl border border-slate-800 max-h-56">
+          <table class="w-full text-left text-xs font-mono">
+            <thead class="bg-slate-900 text-slate-400 sticky top-0">
+              <tr>
+                <th class="px-4 py-2.5">Fecha</th>
+                <th class="px-4 py-2.5">Mano</th>
+                <th class="px-4 py-2.5">Intento</th>
+                <th class="px-4 py-2.5">Máquina</th>
+                <th class="px-4 py-2.5 text-right">Puntaje</th>
+                <th class="px-4 py-2.5 text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="userHistoryTableBody" class="divide-y divide-slate-800/80 bg-slate-950/60">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </section>
+
+  </main>
+
+  <!-- MODAL: REGISTRAR GOLPE -->
+  <div id="modalPunch" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-punch-panel border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+      <button id="btnClosePunchModal" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="flex items-center gap-3 mb-5">
+        <div class="p-2.5 bg-punch-red/20 border border-punch-red/40 rounded-xl">
+          <svg class="w-6 h-6 text-punch-red" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <h3 class="font-arcade text-lg font-bold text-white">REGISTRAR NUEVO IMPACTO</h3>
+          <p class="text-xs text-slate-400">Ingresa la puntuación que marcó la máquina.</p>
+        </div>
+      </div>
+
+      <form id="formPunch" class="space-y-4 text-sm">
+        <div>
+          <label for="punchMachineSelect" class="block text-xs font-semibold text-slate-300 mb-1">Máquina / Lugar</label>
+          <div class="flex gap-2">
+            <select id="punchMachineSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-medium focus:ring-2 focus:ring-punch-cyan focus:outline-none" required>
+              <option value="">Agrega o selecciona una máquina</option>
+            </select>
+            <button type="button" id="btnAddMachineFromPunch" class="shrink-0 px-3 rounded-xl bg-slate-800 border border-slate-700 text-punch-cyan hover:bg-slate-700" aria-label="Agregar máquina">+</button>
+          </div>
+        </div>
+
+        <!-- Boxer Select or New inline -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Boxeador / Participante</label>
+          <div class="flex gap-2">
+            <select id="punchFighterSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-medium focus:ring-2 focus:ring-punch-red focus:outline-none">
+              <!-- Options populated by JS -->
+            </select>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <!-- Hand selection -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Mano</label>
+            <select id="punchHandSelect" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-medium focus:ring-2 focus:ring-punch-red focus:outline-none">
+              <option value="Derecha">🥊 Derecha</option>
+              <option value="Izquierda">⚡ Izquierda</option>
+            </select>
+          </div>
+          
+          <!-- Attempt number -->
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Nº Intento</label>
+            <input type="number" id="punchAttemptInput" min="1" max="20" value="1" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-2 focus:ring-punch-red focus:outline-none" required>
+          </div>
+        </div>
+
+        <!-- Score Input (Arcade styled) -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Puntuación de Golpe (Machine Score)</label>
+          <div class="relative">
+            <input type="number" id="punchScoreInput" min="0" max="999" placeholder="Ej: 752" class="w-full bg-slate-950 border-2 border-punch-red/60 rounded-xl px-4 py-3 text-2xl font-black font-arcade text-punch-red tracking-wider focus:ring-2 focus:ring-punch-red focus:outline-none" required>
+            <span id="punchScoreMaximum" class="absolute right-3 top-3 text-xs font-mono text-slate-500">MAX --</span>
+          </div>
+          <p id="punchMachineScaleNote" class="mt-2 text-[11px] leading-relaxed text-amber-300/90">
+            Elige la máquina para aplicar su máximo y comparar correctamente sus resultados.
+          </p>
+        </div>
+
+        <!-- Date selector -->
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Fecha</label>
+          <input type="date" id="punchDateInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono focus:ring-2 focus:ring-punch-red focus:outline-none" required>
+        </div>
+
+        <div class="pt-3">
+          <button type="submit" class="w-full py-3 bg-gradient-to-r from-punch-red to-rose-600 hover:from-rose-500 hover:to-punch-red text-white font-bold font-arcade tracking-wide rounded-xl shadow-neon-red transition-all">
+            GUARDAR EN EL TABLERO
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTRAR MÁQUINA -->
+  <div id="modalMachine" class="fixed inset-0 z-[60] bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-punch-panel border border-slate-700 w-full max-w-md rounded-2xl p-6 shadow-2xl relative">
+      <button id="btnCloseMachineModal" type="button" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1" aria-label="Cerrar">✕</button>
+      <h3 class="font-arcade text-lg font-bold text-white mb-1">CATÁLOGO DE MÁQUINAS</h3>
+      <p class="text-xs text-slate-400 mb-5">Crea cada máquina una sola vez. Usa un nombre reconocible y el máximo indicado por su pantalla.</p>
+
+      <form id="formMachine" class="space-y-3">
+        <div>
+          <label for="machineNameInput" class="block text-xs font-semibold text-slate-300 mb-1">Nombre / Lugar</label>
+          <input type="text" id="machineNameInput" maxlength="60" placeholder="Ej: Mall Vivo, fuera del gym" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-punch-cyan focus:outline-none" required>
+        </div>
+        <div>
+          <label for="machineMaximumInput" class="block text-xs font-semibold text-slate-300 mb-1">Escala máxima</label>
+          <select id="machineMaximumInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white focus:ring-2 focus:ring-punch-cyan focus:outline-none">
+            <option value="999">0–999</option>
+            <option value="9999">0–9999</option>
+          </select>
+        </div>
+        <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold rounded-xl">AGREGAR MÁQUINA</button>
+      </form>
+
+      <div class="mt-5 border-t border-slate-800 pt-4">
+        <h4 class="text-xs uppercase tracking-wide text-slate-400 font-bold mb-2">Máquinas registradas</h4>
+        <ul id="machineCatalogList" class="space-y-2 text-sm text-slate-200"></ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: AGREGAR NUEVO JUGADOR / AMIGO -->
+  <div id="modalUser" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+    <div class="bg-punch-panel border border-slate-700 w-full max-w-sm rounded-2xl p-6 shadow-2xl relative">
+      <button id="btnCloseUserModal" class="absolute top-4 right-4 text-slate-400 hover:text-white p-1">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+      </button>
+
+      <div class="flex items-center gap-3 mb-4">
+        <div class="p-2.5 bg-punch-cyan/20 border border-punch-cyan/40 rounded-xl">
+          <svg class="w-6 h-6 text-punch-cyan" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/></svg>
+        </div>
+        <div>
+          <h3 class="font-arcade text-lg font-bold text-white">NUEVO AMIGO / JUGADOR</h3>
+          <p class="text-xs text-slate-400">Agrégalo a la lista para sus intentos.</p>
+        </div>
+      </div>
+
+      <form id="formUser" class="space-y-4 text-sm">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Nombre Completo o Apodo</label>
+          <input type="text" id="newUserNameInput" placeholder="Ej: Matias Silva" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-white font-medium focus:ring-2 focus:ring-punch-cyan focus:outline-none" required>
+        </div>
+
+        <div class="pt-2">
+          <button type="submit" class="w-full py-2.5 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-white font-bold font-arcade tracking-wide rounded-xl shadow-neon-cyan transition-all">
+            REGISTRAR JUGADOR
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- TOAST NOTIFICATION CONTAINER -->
+  <div id="toastNotification" class="fixed bottom-5 right-5 z-50 transform translate-y-24 opacity-0 transition-all duration-300 bg-slate-900 border border-punch-cyan text-white text-xs px-4 py-3 rounded-xl shadow-2xl flex items-center gap-3 font-mono">
+    <span class="text-punch-cyan text-lg">⚡</span>
+    <span id="toastMsg">Acción completada con éxito</span>
+  </div>
+
+  <!-- JAVASCRIPT APPLICATION LOGIC -->
+  <script>
+    const STORAGE_KEY_PUNCHES = "boxing_arcade_punches_v1";
+    const STORAGE_KEY_PLAYERS = "boxing_arcade_players_v1";
+    const STORAGE_KEY_MACHINES = "boxing_arcade_machines_v1";
+    const LEGACY_MACHINE_ID = "legacy-machine-999";
+
+    function getLocalDateString(date = new Date()) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`;
+    }
+
+    // SECURITY: Escape imported values before inserting them into HTML templates.
+    function escapeHtml(value) {
+      return String(value).replace(/[&<>"']/g, char => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+      })[char]);
+    }
+
+    // App state
+    let punches = [];
+    let players = [];
+    let machines = [];
+    let selectedDate = getLocalDateString();
+    let selectedMachineFilter = "all";
+    let activeScope = "daily"; // 'daily' or 'historic'
+    let activeHandTab = "Right"; // 'Right', 'Left', or 'Combined'
+    let selectedStatsPlayer = "";
+    let comparisonChartInstance = null;
+    let sessionTrendChartInstance = null;
+
+    function getMachine(machineId) {
+      return machines.find(machine => machine.id === machineId);
+    }
+
+    function getPunchMachine(punch) {
+      return getMachine(punch.machineId) || {
+        id: LEGACY_MACHINE_ID,
+        name: "Máquina anterior sin identificar",
+        maxScore: 999
+      };
+    }
+
+    function getComparableScore(punch) {
+      const score = Number(punch.score);
+      if (selectedMachineFilter !== "all") return score;
+      const machine = getPunchMachine(punch);
+      return machine.maxScore > 0 ? (score / machine.maxScore) * 100 : 0;
+    }
+
+    function formatComparableScore(score) {
+      return selectedMachineFilter === "all"
+        ? `${Number(score).toFixed(1)}%`
+        : `${Number(score).toFixed(0)} pts`;
+    }
+
+    function getVisiblePunches() {
+      return selectedMachineFilter === "all"
+        ? punches
+        : punches.filter(punch => punch.machineId === selectedMachineFilter);
+    }
+
+    function saveMachines() {
+      localStorage.setItem(STORAGE_KEY_MACHINES, JSON.stringify(machines));
+    }
+
+    // 2. STORAGE AND STATE INITIALIZATION
+    function initData() {
+      const storedPunches = localStorage.getItem(STORAGE_KEY_PUNCHES);
+      const storedPlayers = localStorage.getItem(STORAGE_KEY_PLAYERS);
+      const storedMachines = localStorage.getItem(STORAGE_KEY_MACHINES);
+
+      if (storedMachines) {
+        try {
+          const parsedMachines = JSON.parse(storedMachines);
+          machines = Array.isArray(parsedMachines) ? parsedMachines.filter(machine =>
+            machine && typeof machine.id === "string" &&
+            typeof machine.name === "string" &&
+            (machine.maxScore === 999 || machine.maxScore === 9999)
+          ) : [];
+        } catch (e) {
+          machines = [];
+        }
+      } else {
+        machines = [];
+      }
+
+      if (storedPunches) {
+        try {
+          punches = JSON.parse(storedPunches);
+        } catch (e) {
+          punches = [];
+        }
+      } else {
+        punches = [];
+        savePunches();
+      }
+
+      if (storedPlayers) {
+        try {
+          players = JSON.parse(storedPlayers);
+        } catch (e) {
+          players = [];
+        }
+      } else {
+        players = [];
+        savePlayers();
+      }
+
+      const needsLegacyMachine = punches.some(punch => !punch.machineId || !getMachine(punch.machineId));
+      if (needsLegacyMachine && !getMachine(LEGACY_MACHINE_ID)) {
+        machines.push({
+          id: LEGACY_MACHINE_ID,
+          name: "Máquina anterior sin identificar",
+          maxScore: 999
+        });
+      }
+      punches = punches.map(punch => ({
+        ...punch,
+        machineId: getMachine(punch.machineId) ? punch.machineId : LEGACY_MACHINE_ID
+      }));
+      saveMachines();
+      savePunches();
+
+      // Ensure all players from punches exist in players array
+      punches.forEach(p => {
+        if (!players.includes(p.player)) {
+          players.push(p.player);
+        }
+      });
+      players.sort();
+    }
+
+    function savePunches() {
+      localStorage.setItem(STORAGE_KEY_PUNCHES, JSON.stringify(punches));
+    }
+
+    function savePlayers() {
+      localStorage.setItem(STORAGE_KEY_PLAYERS, JSON.stringify(players));
+    }
+
+    // 3. UI RENDERING AND LOGIC
+    function refreshAllViews() {
+      updateMachineSelectors();
+      updateDateFilterOptions();
+      updatePlayerDropdowns();
+      renderPodium();
+      renderLeaderboard();
+      renderTrophies();
+      renderFunStats();
+      renderHallOfFame();
+      renderBoxerStats();
+      updateComparisonChart();
+    }
+
+    function updateMachineSelectors() {
+      const filterSelect = document.getElementById("machineFilter");
+      const previousFilter = selectedMachineFilter;
+      filterSelect.innerHTML = "";
+
+      const allOption = document.createElement("option");
+      allOption.value = "all";
+      allOption.textContent = "Todas · comparar %";
+      filterSelect.appendChild(allOption);
+
+      machines.forEach(machine => {
+        const option = document.createElement("option");
+        option.value = machine.id;
+        option.textContent = `${machine.name} · 0–${machine.maxScore}`;
+        filterSelect.appendChild(option);
+      });
+
+      selectedMachineFilter = machines.some(machine => machine.id === previousFilter)
+        ? previousFilter
+        : "all";
+      filterSelect.value = selectedMachineFilter;
+      document.getElementById("machineFilterNote").textContent = selectedMachineFilter === "all"
+        ? "Vista total: puntajes normalizados como porcentaje del máximo de cada máquina. La calibración puede variar."
+        : `Vista de ${getMachine(selectedMachineFilter).name}: puntajes originales de esa máquina.`;
+
+      const punchMachineSelect = document.getElementById("punchMachineSelect");
+      const selectedPunchMachine = punchMachineSelect.value;
+      punchMachineSelect.innerHTML = `<option value="">Agrega o selecciona una máquina</option>`;
+      machines.forEach(machine => {
+        const option = document.createElement("option");
+        option.value = machine.id;
+        option.textContent = `${machine.name} · 0–${machine.maxScore}`;
+        punchMachineSelect.appendChild(option);
+      });
+      if (machines.some(machine => machine.id === selectedPunchMachine)) {
+        punchMachineSelect.value = selectedPunchMachine;
+      } else if (machines.length === 1) {
+        punchMachineSelect.value = machines[0].id;
+      }
+      updatePunchScoreConstraints();
+      renderMachineCatalog();
+    }
+
+    function updatePunchScoreConstraints() {
+      const machine = getMachine(document.getElementById("punchMachineSelect").value);
+      const scoreInput = document.getElementById("punchScoreInput");
+      const maximumLabel = document.getElementById("punchScoreMaximum");
+      const scaleNote = document.getElementById("punchMachineScaleNote");
+      scoreInput.max = machine ? machine.maxScore : 999;
+      maximumLabel.textContent = machine ? `MAX ${machine.maxScore}` : "MAX --";
+      scaleNote.textContent = machine
+        ? `Máquina: ${machine.name}. Registra el puntaje original de 0 a ${machine.maxScore}; el tablero calcula porcentajes para comparar máquinas distintas.`
+        : "Agrega y selecciona una máquina antes de registrar golpes.";
+    }
+
+    function renderMachineCatalog() {
+      const list = document.getElementById("machineCatalogList");
+      if (!list) return;
+      list.replaceChildren();
+      if (machines.length === 0) {
+        const emptyItem = document.createElement("li");
+        emptyItem.className = "text-slate-500";
+        emptyItem.textContent = "Aún no hay máquinas registradas.";
+        list.appendChild(emptyItem);
+        return;
+      }
+
+      machines.forEach(machine => {
+        const item = document.createElement("li");
+        item.className = "flex justify-between gap-3 bg-slate-900 rounded-lg px-3 py-2";
+        const name = document.createElement("span");
+        name.textContent = machine.name;
+        const maximum = document.createElement("span");
+        maximum.className = "text-slate-400 font-mono";
+        maximum.textContent = `0–${machine.maxScore}`;
+        item.append(name, maximum);
+        list.appendChild(item);
+      });
+    }
+
+    function calculateMedian(values) {
+      const sorted = [...values].sort((a, b) => a - b);
+      const middle = Math.floor(sorted.length / 2);
+      return sorted.length % 2 === 0
+        ? (sorted[middle - 1] + sorted[middle]) / 2
+        : sorted[middle];
+    }
+
+    function renderFunStats() {
+      const visiblePunches = getVisiblePunches();
+      const scores = visiblePunches.map(getComparableScore).filter(Number.isFinite);
+      const rematchPairs = new Map();
+
+      visiblePunches.forEach(p => {
+        const attempt = Number(p.attempt);
+        const score = getComparableScore(p);
+        if (p.hand !== "Derecha" || (attempt !== 1 && attempt !== 2) || !Number.isFinite(score)) return;
+
+        const key = `${p.date}\u0000${p.player}\u0000${p.machineId}`;
+        if (!rematchPairs.has(key)) {
+          rematchPairs.set(key, { player: p.player, first: null, second: null });
+        }
+        const pair = rematchPairs.get(key);
+        pair[attempt === 1 ? "first" : "second"] = score;
+      });
+
+      const completePairs = [...rematchPairs.values()].filter(pair =>
+        Number.isFinite(pair.first) && Number.isFinite(pair.second)
+      );
+      const rematchDeltaEl = document.getElementById("rematchDelta");
+      const rematchSummaryEl = document.getElementById("rematchSummary");
+
+      if (completePairs.length > 0) {
+        const deltas = completePairs.map(pair => ({ player: pair.player, delta: pair.second - pair.first }));
+        const averageDelta = Math.round(deltas.reduce((sum, pair) => sum + pair.delta, 0) / deltas.length);
+        const improved = deltas.filter(pair => pair.delta > 0).length;
+        const declined = deltas.filter(pair => pair.delta < 0).length;
+        const unchanged = deltas.length - improved - declined;
+        const biggestComeback = [...deltas]
+          .filter(pair => pair.delta > 0)
+          .sort((a, b) => b.delta - a.delta)[0];
+        const biggestDrop = [...deltas]
+          .filter(pair => pair.delta < 0)
+          .sort((a, b) => a.delta - b.delta)[0];
+
+        const unit = selectedMachineFilter === "all" ? "pp" : "pts";
+        rematchDeltaEl.textContent = `${averageDelta > 0 ? "+" : ""}${averageDelta} ${unit}`;
+        const rematchDetails = [
+          `${deltas.length} pares: ${improved} mejoraron, ${declined} bajaron, ${unchanged} igual.`,
+          biggestComeback && `Mejor remontada: ${biggestComeback.player} (+${biggestComeback.delta} ${unit}).`,
+          biggestDrop && `Mayor bajón: ${biggestDrop.player} (${biggestDrop.delta} ${unit}).`
+        ].filter(Boolean);
+        rematchSummaryEl.textContent = rematchDetails.join(" ");
+      } else {
+        rematchDeltaEl.textContent = "--";
+        rematchSummaryEl.textContent = "Sin pares de intentos 1–2 derechos en la misma fecha.";
+      }
+
+      const meanMedianValueEl = document.getElementById("meanMedianValue");
+      const meanMedianSummaryEl = document.getElementById("meanMedianSummary");
+      if (scores.length > 0) {
+        const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+        const median = calculateMedian(scores);
+        const difference = Math.round(mean - median);
+        const suffix = selectedMachineFilter === "all" ? "%" : " pts";
+        meanMedianValueEl.textContent = `${Math.round(mean)} / ${Math.round(median)}${suffix}`;
+        meanMedianSummaryEl.textContent =
+          `Media / mediana. La media queda ${Math.abs(difference)}${suffix} ${difference > 0 ? "arriba" : difference < 0 ? "abajo" : "empatada"}.`;
+      } else {
+        meanMedianValueEl.textContent = "--";
+        meanMedianSummaryEl.textContent = "Sin golpes registrados.";
+      }
+
+      const playersWithBothHands = players.map(player => {
+        const playerPunches = visiblePunches.filter(p => p.player === player);
+        const rightScores = playerPunches.filter(p => p.hand === "Derecha").map(getComparableScore);
+        const leftScores = playerPunches.filter(p => p.hand === "Izquierda").map(getComparableScore);
+        if (!rightScores.length || !leftScores.length) return null;
+        return {
+          player,
+          gap: Math.abs(Math.max(...rightScores) - Math.max(...leftScores))
+        };
+      }).filter(Boolean);
+
+      const averageHandGapEl = document.getElementById("averageHandGap");
+      const averageHandGapSummaryEl = document.getElementById("averageHandGapSummary");
+      if (playersWithBothHands.length > 0) {
+        const averageGap = Math.round(
+          playersWithBothHands.reduce((sum, entry) => sum + entry.gap, 0) / playersWithBothHands.length
+        );
+        const mostBalanced = [...playersWithBothHands].sort((a, b) => a.gap - b.gap)[0];
+        const unit = selectedMachineFilter === "all" ? "pp" : " pts";
+        averageHandGapEl.textContent = `${averageGap}${unit}`;
+        averageHandGapSummaryEl.textContent =
+          `Promedio de ${playersWithBothHands.length} participantes. Más parejo: ${mostBalanced.player} (${mostBalanced.gap}${unit} de brecha).`;
+      } else {
+        averageHandGapEl.textContent = "--";
+        averageHandGapSummaryEl.textContent = "Faltan golpes con ambas manos.";
+      }
+
+      const scoreDeviationEl = document.getElementById("scoreDeviation");
+      const scoreDeviationSummaryEl = document.getElementById("scoreDeviationSummary");
+      if (scores.length > 0) {
+        const mean = scores.reduce((sum, score) => sum + score, 0) / scores.length;
+        const standardDeviation = Math.sqrt(
+          scores.reduce((sum, score) => sum + ((score - mean) ** 2), 0) / scores.length
+        );
+        scoreDeviationEl.textContent = selectedMachineFilter === "all"
+          ? `±${standardDeviation.toFixed(1)} pp`
+          : `±${Math.round(standardDeviation)} pts`;
+        scoreDeviationSummaryEl.textContent = `Dispersión de ${scores.length} golpes; no mide progreso por sí sola.`;
+      } else {
+        scoreDeviationEl.textContent = "--";
+        scoreDeviationSummaryEl.textContent = "Sin golpes registrados.";
+      }
+
+      renderSessionTrendChart();
+    }
+
+    function renderSessionTrendChart() {
+      const canvas = document.getElementById("sessionTrendChart");
+      if (!canvas) return;
+
+      const visiblePunches = getVisiblePunches();
+      const dates = [...new Set(visiblePunches.map(p => p.date))].sort();
+      const averagesByHand = hand => dates.map(date => {
+        const handScores = visiblePunches
+          .filter(p => p.date === date && p.hand === hand)
+          .map(getComparableScore)
+          .filter(Number.isFinite);
+        return handScores.length
+          ? handScores.reduce((sum, score) => sum + score, 0) / handScores.length
+          : null;
+      });
+
+      if (sessionTrendChartInstance) {
+        sessionTrendChartInstance.destroy();
+      }
+
+      sessionTrendChartInstance = new Chart(canvas.getContext("2d"), {
+        type: "line",
+        data: {
+          labels: dates,
+          datasets: [
+            {
+              label: selectedMachineFilter === "all" ? "🥊 Promedio derecha (% máx.)" : "🥊 Promedio derecha (pts)",
+              data: averagesByHand("Derecha"),
+              borderColor: "#ff1a4b",
+              backgroundColor: "rgba(255, 26, 75, 0.18)",
+              pointBackgroundColor: "#ff1a4b",
+              tension: 0.25,
+              spanGaps: true
+            },
+            {
+              label: selectedMachineFilter === "all" ? "⚡ Promedio izquierda (% máx.)" : "⚡ Promedio izquierda (pts)",
+              data: averagesByHand("Izquierda"),
+              borderColor: "#00f2fe",
+              backgroundColor: "rgba(0, 242, 254, 0.18)",
+              pointBackgroundColor: "#00f2fe",
+              tension: 0.25,
+              spanGaps: true
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: { color: "#cbd5e1", font: { family: "Inter", weight: "bold" } }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: "rgba(51, 65, 85, 0.25)" },
+              ticks: { color: "#94a3b8" }
+            },
+            y: {
+              beginAtZero: true,
+              max: selectedMachineFilter === "all" ? 100 : getMachine(selectedMachineFilter)?.maxScore || 999,
+              grid: { color: "rgba(51, 65, 85, 0.25)" },
+              ticks: { color: "#94a3b8" }
+            }
+          }
+        }
+      });
+
+      document.getElementById("sessionTrendSummary").textContent = dates.length > 1
+        ? `${dates.length} fechas registradas. ${selectedMachineFilter === "all" ? "Valores normalizados al máximo de cada máquina; aun así, la calibración puede variar." : "Puntajes brutos de la máquina seleccionada."}`
+        : dates.length === 1
+          ? "Solo hay una fecha registrada: esto es una foto, no una tendencia. Vuelve después de otra sesión."
+          : "Registra sesiones en distintas fechas para ver una evolución.";
+    }
+
+    // Populate Date Selector
+    function updateDateFilterOptions() {
+      const dateSelect = document.getElementById("dateFilter");
+      const visiblePunches = getVisiblePunches();
+      const dates = Array.from(new Set(visiblePunches.map(p => p.date))).sort().reverse();
+      
+      // Default to the first available date or today's fixed date
+      if (!dates.includes(selectedDate)) {
+        if (dates.length > 0) {
+          selectedDate = dates[0];
+        } else {
+          selectedDate = getLocalDateString();
+        }
+      }
+
+      dateSelect.innerHTML = "";
+      dates.forEach(d => {
+        const opt = document.createElement("option");
+        opt.value = d;
+        opt.textContent = `📅 ${d}`;
+        if (d === selectedDate) opt.selected = true;
+        dateSelect.appendChild(opt);
+      });
+
+      document.getElementById("selectedDateDisplay").textContent = selectedDate;
+      const punchesCountToday = visiblePunches.filter(p => p.date === selectedDate).length;
+      document.getElementById("totalPunchesToday").textContent = `${punchesCountToday} impactos registrados`;
+    }
+
+    // Populate Boxer Selectors
+    function updatePlayerDropdowns() {
+      const punchFighterSelect = document.getElementById("punchFighterSelect");
+      const selectFighterStats = document.getElementById("selectFighterStats");
+
+      punchFighterSelect.innerHTML = "";
+      selectFighterStats.innerHTML = "";
+
+      players.forEach(name => {
+        const opt1 = document.createElement("option");
+        opt1.value = name;
+        opt1.textContent = name;
+        punchFighterSelect.appendChild(opt1);
+
+        const opt2 = document.createElement("option");
+        opt2.value = name;
+        opt2.textContent = name;
+        if (name === selectedStatsPlayer) opt2.selected = true;
+        selectFighterStats.appendChild(opt2);
+      });
+
+      if (!selectedStatsPlayer && players.length > 0) {
+        selectedStatsPlayer = players[0];
+        selectFighterStats.value = selectedStatsPlayer;
+      }
+    }
+
+    // PODIUM: Champions for the selected day
+    function renderPodium() {
+      const dayPunches = getVisiblePunches().filter(p => p.date === selectedDate);
+      const scoreUnit = selectedMachineFilter === "all" ? "% DEL MÁX." : "PUNTOS";
+      ["champScoreUnit", "bestRightScoreUnit", "bestLeftScoreUnit"].forEach(id => {
+        document.getElementById(id).textContent = scoreUnit;
+      });
+      document.getElementById("trophyPlumaUnit").textContent = scoreUnit;
+      document.getElementById("trophyAlphaUnit").textContent = scoreUnit;
+      document.getElementById("trophyAmputadoUnit").textContent =
+        selectedMachineFilter === "all" ? "PUNTOS PORCENTUALES" : "PTS DE ABISMO";
+
+      // 1. Absolute Best of the Day
+      const bestOverall = [...dayPunches].sort((a, b) => getComparableScore(b) - getComparableScore(a))[0];
+      const champNameEl = document.getElementById("champName");
+      const champScoreEl = document.getElementById("champScore");
+      const champHandEl = document.getElementById("champHandDetail");
+      const champAttemptEl = document.getElementById("champAttemptDetail");
+
+      if (bestOverall) {
+        champNameEl.textContent = bestOverall.player;
+        champScoreEl.textContent = formatComparableScore(getComparableScore(bestOverall));
+        champHandEl.textContent = `Mano: ${bestOverall.hand} · ${getPunchMachine(bestOverall).name}`;
+        champAttemptEl.textContent = `Intento #${bestOverall.attempt}`;
+      } else {
+        champNameEl.textContent = "Sin Combates";
+        champScoreEl.textContent = "0";
+        champHandEl.textContent = "Mano: --";
+        champAttemptEl.textContent = "Intento #--";
+      }
+
+      // 2. Best Right Hand of the Day
+      const rightPunches = dayPunches.filter(p => p.hand === "Derecha");
+      const bestRight = [...rightPunches].sort((a, b) => getComparableScore(b) - getComparableScore(a))[0];
+      const rightNameEl = document.getElementById("bestRightName");
+      const rightScoreEl = document.getElementById("bestRightScore");
+      const rightAttemptEl = document.getElementById("bestRightAttempt");
+
+      if (bestRight) {
+        rightNameEl.textContent = bestRight.player;
+        rightScoreEl.textContent = formatComparableScore(getComparableScore(bestRight));
+        rightAttemptEl.textContent = `Intento #${bestRight.attempt} · ${getPunchMachine(bestRight).name}`;
+      } else {
+        rightNameEl.textContent = "Sin datos";
+        rightScoreEl.textContent = "0";
+        rightAttemptEl.textContent = "Intento #--";
+      }
+
+      // 3. Best Left Hand of the Day
+      const leftPunches = dayPunches.filter(p => p.hand === "Izquierda");
+      const bestLeft = [...leftPunches].sort((a, b) => getComparableScore(b) - getComparableScore(a))[0];
+      const leftNameEl = document.getElementById("bestLeftName");
+      const leftScoreEl = document.getElementById("bestLeftScore");
+      const leftAttemptEl = document.getElementById("bestLeftAttempt");
+
+      if (bestLeft) {
+        leftNameEl.textContent = bestLeft.player;
+        leftScoreEl.textContent = formatComparableScore(getComparableScore(bestLeft));
+        leftAttemptEl.textContent = `Intento #${bestLeft.attempt} · ${getPunchMachine(bestLeft).name}`;
+      } else {
+        leftNameEl.textContent = "Sin datos";
+        leftScoreEl.textContent = "0";
+        leftAttemptEl.textContent = "Intento #--";
+      }
+    }
+
+    // RANKING / LEADERBOARD LOGIC
+    function renderLeaderboard() {
+      const tbody = document.getElementById("rankingTableBody");
+      const emptyState = document.getElementById("tableEmptyState");
+      tbody.innerHTML = "";
+
+      // Filter by machine and scope; cross-machine comparisons use percent of machine maximum.
+      const basePunches = activeScope === "daily" 
+        ? getVisiblePunches().filter(p => p.date === selectedDate)
+        : getVisiblePunches();
+      const machineSpecific = selectedMachineFilter !== "all";
+      const scoreLabel = machineSpecific ? "Puntaje máximo (bruto)" : "Mejor puntaje (% máx.)";
+      document.getElementById("rankingScoreHeading").textContent = scoreLabel;
+
+      let rankingData = [];
+
+      if (activeHandTab === "Combined") {
+        const userMap = new Map();
+        basePunches.forEach(p => {
+          if (!userMap.has(p.player)) {
+            userMap.set(p.player, { player: p.player, bestRight: null, bestLeft: null, dates: new Set() });
+          }
+          const user = userMap.get(p.player);
+          user.dates.add(p.date);
+          const handKey = p.hand === "Derecha" ? "bestRight" : "bestLeft";
+          if (!user[handKey] || getComparableScore(p) > getComparableScore(user[handKey])) user[handKey] = p;
+        });
+
+        rankingData = [...userMap.values()].map(user => {
+          const rightScore = user.bestRight ? getComparableScore(user.bestRight) : 0;
+          const leftScore = user.bestLeft ? getComparableScore(user.bestLeft) : 0;
+          const bestRecord = rightScore >= leftScore ? user.bestRight : user.bestLeft;
+          const score = rightScore + leftScore;
+          const machineNames = [...new Set([user.bestRight, user.bestLeft]
+            .filter(Boolean)
+            .map(p => getPunchMachine(p).name))];
+          return {
+            player: user.player,
+            score,
+            rawScore: machineSpecific ? score : null,
+            detail: machineSpecific
+              ? `Der: ${rightScore} | Izq: ${leftScore}`
+              : `Der: ${rightScore.toFixed(1)}% | Izq: ${leftScore.toFixed(1)}%`,
+            attempt: "-",
+            date: [...user.dates].join(", "),
+            hand: "Ambas Manos",
+            machine: machineNames.length === 1 ? machineNames[0] : "Varias máquinas",
+            machineMax: bestRecord ? getPunchMachine(bestRecord).maxScore : 999
+          };
+        }).filter(user => user.score > 0);
+
+      } else {
+        // Filter by Hand (Derecha or Izquierda) and get each user's best attempt
+        const handName = activeHandTab === "Right" ? "Derecha" : "Izquierda";
+        const filteredPunches = basePunches.filter(p => p.hand === handName);
+
+        // Group by player to show unique best strike per user in the table
+        const userBestMap = new Map();
+        filteredPunches.forEach(p => {
+          const currentBest = userBestMap.get(p.player);
+          if (!currentBest || getComparableScore(p) > getComparableScore(currentBest)) userBestMap.set(p.player, p);
+        });
+
+        rankingData = [...userBestMap.values()].map(p => ({
+          player: p.player,
+          score: getComparableScore(p),
+          detail: "",
+          rawScore: Number(p.score),
+          attempt: p.attempt,
+          date: p.date,
+          hand: p.hand,
+          machine: getPunchMachine(p).name,
+          machineMax: getPunchMachine(p).maxScore
+        }));
+      }
+
+      // Sort descending by score
+      rankingData.sort((a, b) => b.score - a.score);
+
+      if (rankingData.length === 0) {
+        emptyState.classList.remove("hidden");
+        return;
+      }
+      emptyState.classList.add("hidden");
+
+      rankingData.forEach((item, index) => {
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-900/80 transition-colors border-b border-slate-800/60";
+
+        // Position Badge
+        let posBadge = `<span class="text-slate-400 font-mono text-sm">#${index + 1}</span>`;
+        if (index === 0) {
+          posBadge = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-500/20 text-amber-300 font-bold border border-amber-500/40 text-xs">🥇</span>`;
+        } else if (index === 1) {
+          posBadge = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-slate-300/20 text-slate-200 font-bold border border-slate-300/40 text-xs">🥈</span>`;
+        } else if (index === 2) {
+          posBadge = `<span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-amber-700/20 text-amber-500 font-bold border border-amber-700/40 text-xs">🥉</span>`;
+        }
+
+        // Color badge for hand
+        let handBadge = "";
+        if (item.hand === "Derecha") {
+          handBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-red-950/70 text-punch-red border border-red-500/30">🥊 Derecha</span>`;
+        } else if (item.hand === "Izquierda") {
+          handBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-cyan-950/70 text-punch-cyan border border-cyan-500/30">⚡ Izquierda</span>`;
+        } else {
+          handBadge = `<span class="px-2 py-0.5 rounded text-[11px] font-semibold bg-amber-950/70 text-punch-gold border border-amber-500/30">🔥 Combinado</span>`;
+        }
+
+        const meterMaximum = machineSpecific
+          ? item.machineMax * (activeHandTab === "Combined" ? 2 : 1)
+          : (activeHandTab === "Combined" ? 200 : 100);
+        const meterPercent = Math.min(100, Math.round((item.score / meterMaximum) * 100));
+        const scoreText = activeHandTab === "Combined"
+          ? (machineSpecific ? `${Math.round(item.score)} pts` : `${item.score.toFixed(1)}%`)
+          : (machineSpecific ? `${Math.round(item.rawScore)} pts` : `${item.score.toFixed(1)}%`);
+
+        tr.innerHTML = `
+          <td class="px-4 py-3 text-center">${posBadge}</td>
+          <td class="px-4 py-3 font-semibold text-white">
+            <div class="flex items-center gap-2">
+              <span>${escapeHtml(item.player)}</span>
+              ${item.detail ? `<span class="text-[10px] text-slate-500 font-mono">(${escapeHtml(item.detail)})</span>` : ''}
+            </div>
+          </td>
+          <td class="px-4 py-3 text-right">
+            <span class="text-base font-black font-arcade ${index === 0 ? 'text-punch-gold glow-text-gold' : 'text-slate-100'}">
+              ${escapeHtml(scoreText)}
+            </span>
+          </td>
+          <td class="px-4 py-3 text-center">${handBadge}</td>
+          <td class="px-4 py-3 text-center text-slate-400 text-xs">${escapeHtml(item.machine)}</td>
+          <td class="px-4 py-3 text-center text-slate-400 font-mono text-xs">${escapeHtml(item.attempt ? (typeof item.attempt === 'number' ? `Intento #${item.attempt}` : item.attempt) : '-')}</td>
+          <td class="px-4 py-3 text-center text-slate-400 text-xs font-mono">${escapeHtml(item.date)}</td>
+          <td class="px-4 py-3">
+            <div class="w-24 bg-slate-800 rounded-full h-2 overflow-hidden mx-auto">
+              <div class="h-full rounded-full ${index === 0 ? 'bg-punch-gold' : (item.hand === 'Izquierda' ? 'bg-punch-cyan' : 'bg-punch-red')}" style="width: ${meterPercent}%"></div>
+            </div>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    // GALA DE TROFEOS TÓXICOS & HUMOR NEGRO
+    function renderTrophies() {
+      const visiblePunches = getVisiblePunches();
+      const unit = selectedMachineFilter === "all" ? "pp" : "pts";
+      const scoreDetailUnit = selectedMachineFilter === "all" ? "%" : " pts";
+      if (visiblePunches.length === 0) {
+        document.getElementById("trophyPlumaPlayer").textContent = "--";
+        document.getElementById("trophyPlumaHand").textContent = "Mano: --";
+        document.getElementById("trophyPlumaScore").textContent = "0";
+        document.getElementById("trophyAlphaPlayer").textContent = "--";
+        document.getElementById("trophyAlphaHand").textContent = "Mano: --";
+        document.getElementById("trophyAlphaScore").textContent = "0";
+        document.getElementById("trophyAmputadoPlayer").textContent = "--";
+        document.getElementById("trophyAmputadoDetail").textContent = "D: 0 | I: 0";
+        document.getElementById("trophyAmputadoDiff").textContent = "0 pts";
+        document.getElementById("trophyChantaPlayer").textContent = "--";
+        document.getElementById("trophyChantaDetail").textContent = "Máx: 0 vs Mín: 0";
+        document.getElementById("trophyChantaDiff").textContent = "0 pts";
+        document.getElementById("trophyFrankPlayer").textContent = "--";
+        document.getElementById("trophyFrankDetail").textContent = "D: 0 | I: 0";
+        document.getElementById("trophyFrankRatio").textContent = "0%";
+        document.getElementById("trophySpenderList").innerHTML =
+          `<div class="text-slate-500 py-1 text-center">Sin tiros registrados</div>`;
+        return;
+      }
+
+      // 1. Mano de pluma (golpe más bajo absoluto)
+      const sortedByLowest = [...visiblePunches].sort((a, b) => getComparableScore(a) - getComparableScore(b));
+      const lowestPunch = sortedByLowest[0];
+      document.getElementById("trophyPlumaPlayer").textContent = lowestPunch.player;
+      document.getElementById("trophyPlumaHand").textContent =
+        `Mano ${lowestPunch.hand} (Intento #${lowestPunch.attempt}) · ${getPunchMachine(lowestPunch).name}`;
+      document.getElementById("trophyPlumaScore").textContent = formatComparableScore(getComparableScore(lowestPunch));
+
+      // 2. El Macho Alfa (golpe más alto absoluto)
+      const highestPunch = [...visiblePunches].sort((a, b) => getComparableScore(b) - getComparableScore(a))[0];
+      document.getElementById("trophyAlphaPlayer").textContent = highestPunch.player;
+      document.getElementById("trophyAlphaHand").textContent =
+        `Mano ${highestPunch.hand} (Intento #${highestPunch.attempt}) · ${getPunchMachine(highestPunch).name}`;
+      document.getElementById("trophyAlphaScore").textContent = formatComparableScore(getComparableScore(highestPunch));
+
+      // 3. El Brazo de Adorno (mayor diferencia entre max derecha y max izquierda)
+      let maxAmputee = { player: "--", diff: 0, dScore: 0, iScore: 0 };
+      // 4. El Frankenstein (mejor simetría)
+      let bestFrank = { player: "--", ratio: 0, dScore: 0, iScore: 0 };
+      // 5. El Chanta (mayor diferencia entre su mejor y peor intento personal)
+      let maxChanta = { player: "--", diff: 0, maxScore: 0, minScore: 0 };
+      
+      // Spender metrics per player (Count + Total Cumulative Score)
+      const spendersList = [];
+
+      players.forEach(p => {
+        const pPunches = visiblePunches.filter(item => item.player === p);
+        if (pPunches.length === 0) return;
+
+        const totalScoreAccumulated = pPunches.reduce((sum, x) => sum + getComparableScore(x), 0);
+        const avg = Math.round(totalScoreAccumulated / pPunches.length);
+        spendersList.push({
+          player: p,
+          count: pPunches.length,
+          totalScore: totalScoreAccumulated,
+          avg: avg
+        });
+
+        // Chanta calculation (delta entre su tiro max y min)
+        if (pPunches.length >= 2) {
+          const pScores = pPunches.map(getComparableScore);
+          const maxS = Math.max(...pScores);
+          const minS = Math.min(...pScores);
+          const diff = maxS - minS;
+          if (diff > maxChanta.diff) {
+            maxChanta = { player: p, diff: diff, maxScore: maxS, minScore: minS };
+          }
+        }
+
+        // Amputee & Frank calculations
+        const rights = pPunches.filter(x => x.hand === "Derecha").map(getComparableScore);
+        const lefts = pPunches.filter(x => x.hand === "Izquierda").map(getComparableScore);
+
+        if (rights.length > 0 && lefts.length > 0) {
+          const maxR = Math.max(...rights);
+          const maxL = Math.max(...lefts);
+          const diffSides = Math.abs(maxR - maxL);
+
+          if (diffSides > maxAmputee.diff) {
+            maxAmputee = { player: p, diff: diffSides, dScore: maxR, iScore: maxL };
+          }
+
+          const ratio = Math.round((Math.min(maxR, maxL) / Math.max(maxR, maxL)) * 100);
+          if (maxR > 0 && maxL > 0 && ratio > bestFrank.ratio) {
+            bestFrank = { player: p, ratio: ratio, dScore: maxR, iScore: maxL };
+          }
+        }
+      });
+
+      // Update Amputee trophy
+      document.getElementById("trophyAmputadoPlayer").textContent = maxAmputee.player;
+      document.getElementById("trophyAmputadoDetail").textContent =
+        `D: ${Math.round(maxAmputee.dScore)}${scoreDetailUnit} | I: ${Math.round(maxAmputee.iScore)}${scoreDetailUnit}`;
+      document.getElementById("trophyAmputadoDiff").textContent = `${Math.round(maxAmputee.diff)} ${unit}`;
+
+      // Update Chanta trophy
+      document.getElementById("trophyChantaPlayer").textContent = maxChanta.player;
+      document.getElementById("trophyChantaDetail").textContent =
+        `Máx: ${Math.round(maxChanta.maxScore)}${scoreDetailUnit} vs Mín: ${Math.round(maxChanta.minScore)}${scoreDetailUnit}`;
+      document.getElementById("trophyChantaDiff").textContent = `${Math.round(maxChanta.diff)} ${unit}`;
+
+      // Update Frankenstein trophy
+      document.getElementById("trophyFrankPlayer").textContent = bestFrank.player;
+      document.getElementById("trophyFrankDetail").textContent =
+        `D: ${Math.round(bestFrank.dScore)}${scoreDetailUnit} | I: ${Math.round(bestFrank.iScore)}${scoreDetailUnit}`;
+      document.getElementById("trophyFrankRatio").textContent = `${bestFrank.ratio}%`;
+
+      // Sort Spenders: 1st by attempt count desc, 2nd by total cumulative score desc
+      spendersList.sort((a, b) => {
+        if (b.count !== a.count) {
+          return b.count - a.count;
+        }
+        return b.totalScore - a.totalScore;
+      });
+
+      const spenderListEl = document.getElementById("trophySpenderList");
+      spenderListEl.innerHTML = "";
+
+      const top3Spenders = spendersList.slice(0, 3);
+      if (top3Spenders.length === 0) {
+        spenderListEl.innerHTML = `<div class="text-slate-500 py-1 text-center">Sin tiros registrados</div>`;
+      } else {
+        const medals = ["🥇", "🥈", "🥉"];
+        top3Spenders.forEach((sp, idx) => {
+          const row = document.createElement("div");
+          row.className = "flex items-center justify-between py-1 border-b border-slate-900 last:border-0";
+          row.innerHTML = `
+            <div class="flex items-center gap-2 truncate">
+              <span class="text-sm">${medals[idx] || '#' + (idx + 1)}</span>
+              <span class="font-bold text-slate-200 truncate ${idx === 0 ? 'text-emerald-300' : ''}">${escapeHtml(sp.player)}</span>
+            </div>
+            <div class="text-right whitespace-nowrap pl-2">
+              <span class="font-arcade font-bold text-emerald-400">${escapeHtml(Math.round(sp.totalScore))}</span>
+                  <span class="text-[10px] text-slate-500">${unit} (${escapeHtml(sp.count)} tiros)</span>
+            </div>
+          `;
+          spenderListEl.appendChild(row);
+        });
+      }
+    }
+
+    // HALL OF FAME & RECORDS
+    function renderHallOfFame() {
+      const visiblePunches = getVisiblePunches();
+      // 1. Highest All Time Record
+      if (visiblePunches.length > 0) {
+        const sorted = [...visiblePunches].sort((a, b) => getComparableScore(b) - getComparableScore(a));
+        const record = sorted[0];
+        document.getElementById("allTimeRecordPlayer").textContent =
+          `${record.player} (${record.hand} · ${getPunchMachine(record).name})`;
+        document.getElementById("allTimeRecordScore").textContent = formatComparableScore(getComparableScore(record));
+      } else {
+        document.getElementById("allTimeRecordPlayer").textContent = "--";
+        document.getElementById("allTimeRecordScore").textContent = "0";
+      }
+
+      // 2. Best Symmetry (Ambidiestro)
+      // Must have both right and left strikes
+      let bestSymmetry = { player: "--", ratio: 0 };
+      players.forEach(p => {
+        const playerPunches = visiblePunches.filter(item => item.player === p);
+        const bestR = Math.max(0, ...playerPunches.filter(i => i.hand === "Derecha").map(getComparableScore));
+        const bestL = Math.max(0, ...playerPunches.filter(i => i.hand === "Izquierda").map(getComparableScore));
+
+        if (bestR > 0 && bestL > 0) {
+          // ratio: left over right percentage
+          const ratio = Math.round((Math.min(bestR, bestL) / Math.max(bestR, bestL)) * 100);
+          if (ratio > bestSymmetry.ratio) {
+            bestSymmetry = { player: p, ratio: ratio };
+          }
+        }
+      });
+
+      document.getElementById("bestSymmetryPlayer").textContent = bestSymmetry.player;
+      document.getElementById("bestSymmetryValue").textContent = `${bestSymmetry.ratio}%`;
+
+      // 3. Total Count
+      document.getElementById("totalPunchesCount").textContent = visiblePunches.length;
+      document.getElementById("hallScoreUnit").textContent =
+        selectedMachineFilter === "all" ? "% MÁX." : "PUNTOS";
+      document.getElementById("hallSymmetryCaption").textContent =
+        selectedMachineFilter === "all"
+          ? "Simetría = (Mejor % zurda / Mejor % derecha) × 100%"
+          : "Simetría = (Mejor zurda / Mejor derecha) × 100%";
+    }
+
+    // BOXER INDIVIDUAL PROFILE
+    function renderBoxerStats() {
+      if (!selectedStatsPlayer) {
+        document.getElementById("userStatMaxRight").textContent = "0";
+        document.getElementById("userStatMaxRightDate").textContent = "Sin golpes diestros";
+        document.getElementById("userStatMaxLeft").textContent = "0";
+        document.getElementById("userStatMaxLeftDate").textContent = "Sin golpes zurdos";
+        document.getElementById("userStatBalance").textContent = "0%";
+        document.getElementById("userStatBalanceComment").textContent = "Requiere golpes con ambas manos";
+        document.getElementById("userStatTotalPunches").innerHTML =
+          `0 <span class="text-sm font-mono text-slate-400">golpes</span>`;
+        document.getElementById("userStatAvgScore").textContent = "Promedio: 0 pts";
+        document.getElementById("userHistoryTableBody").innerHTML =
+          `<tr><td colspan="6" class="py-4 text-center text-slate-500">No hay intentos registrados para este boxeador.</td></tr>`;
+        return;
+      }
+
+      const userPunches = getVisiblePunches().filter(p => p.player === selectedStatsPlayer);
+
+      // Max Right
+      const rightPunches = userPunches.filter(p => p.hand === "Derecha");
+      const bestRight = [...rightPunches].sort((a, b) => getComparableScore(b) - getComparableScore(a))[0];
+      const maxRightEl = document.getElementById("userStatMaxRight");
+      const maxRightDateEl = document.getElementById("userStatMaxRightDate");
+
+      if (bestRight) {
+        maxRightEl.textContent = formatComparableScore(getComparableScore(bestRight));
+        maxRightDateEl.textContent =
+          `${bestRight.date} (Intento #${bestRight.attempt} · ${getPunchMachine(bestRight).name} · ${bestRight.score}/${getPunchMachine(bestRight).maxScore})`;
+      } else {
+        maxRightEl.textContent = "0";
+        maxRightDateEl.textContent = "Sin golpes diestros";
+      }
+
+      // Max Left
+      const leftPunches = userPunches.filter(p => p.hand === "Izquierda");
+      const bestLeft = [...leftPunches].sort((a, b) => getComparableScore(b) - getComparableScore(a))[0];
+      const maxLeftEl = document.getElementById("userStatMaxLeft");
+      const maxLeftDateEl = document.getElementById("userStatMaxLeftDate");
+
+      if (bestLeft) {
+        maxLeftEl.textContent = formatComparableScore(getComparableScore(bestLeft));
+        maxLeftDateEl.textContent =
+          `${bestLeft.date} (Intento #${bestLeft.attempt} · ${getPunchMachine(bestLeft).name} · ${bestLeft.score}/${getPunchMachine(bestLeft).maxScore})`;
+      } else {
+        maxLeftEl.textContent = "0";
+        maxLeftDateEl.textContent = "Sin golpes zurdos";
+      }
+
+      // Power Balance
+      const balanceEl = document.getElementById("userStatBalance");
+      const balanceCommentEl = document.getElementById("userStatBalanceComment");
+
+      if (bestRight && bestLeft &&
+          Math.max(getComparableScore(bestRight), getComparableScore(bestLeft)) > 0) {
+        const ratio = Math.round(
+          (Math.min(getComparableScore(bestRight), getComparableScore(bestLeft)) /
+            Math.max(getComparableScore(bestRight), getComparableScore(bestLeft))) * 100
+        );
+        balanceEl.textContent = `${ratio}%`;
+        if (ratio >= 85) {
+          balanceCommentEl.textContent = "🔥 Extraordinariamente ambidiestro";
+        } else if (ratio >= 65) {
+          balanceCommentEl.textContent = "⚡ Buen balance de pegada";
+        } else {
+          balanceCommentEl.textContent = "🥊 Dominancia diestra marcada";
+        }
+      } else {
+        balanceEl.textContent = "0%";
+        balanceCommentEl.textContent = "Requiere golpes con ambas manos";
+      }
+
+      // Total Volume & Average
+      const totalPunchesEl = document.getElementById("userStatTotalPunches");
+      const avgScoreEl = document.getElementById("userStatAvgScore");
+
+      totalPunchesEl.innerHTML = `${userPunches.length} <span class="text-sm font-mono text-slate-400">golpes</span>`;
+      if (userPunches.length > 0) {
+        const avg = userPunches.reduce((acc, p) => acc + getComparableScore(p), 0) / userPunches.length;
+        avgScoreEl.textContent = selectedMachineFilter === "all"
+          ? `Promedio normalizado: ${avg.toFixed(1)}%`
+          : `Promedio: ${Math.round(avg)} pts`;
+      } else {
+        avgScoreEl.textContent = "Promedio: 0 pts";
+      }
+
+      // Render Chronological History Table
+      const historyTableBody = document.getElementById("userHistoryTableBody");
+      historyTableBody.innerHTML = "";
+
+      const sortedHistory = [...userPunches].sort((a, b) => {
+        // Sort by date desc then attempt desc
+        return b.date.localeCompare(a.date) || b.attempt - a.attempt;
+      });
+
+      if (sortedHistory.length === 0) {
+        historyTableBody.innerHTML = `<tr><td colspan="6" class="py-4 text-center text-slate-500">No hay intentos registrados para este boxeador.</td></tr>`;
+      } else {
+        sortedHistory.forEach(p => {
+          const row = document.createElement("tr");
+          row.className = "hover:bg-slate-900 transition-colors";
+          row.innerHTML = `
+            <td class="px-4 py-2.5 text-slate-300">${escapeHtml(p.date)}</td>
+            <td class="px-4 py-2.5 ${p.hand === 'Derecha' ? 'text-punch-red font-bold' : 'text-punch-cyan font-bold'}">${escapeHtml(p.hand)}</td>
+            <td class="px-4 py-2.5 text-slate-400">Intento #${escapeHtml(p.attempt)}</td>
+            <td class="px-4 py-2.5 text-slate-400">${escapeHtml(getPunchMachine(p).name)}</td>
+            <td class="px-4 py-2.5 text-right font-black font-arcade text-white">${escapeHtml(p.score)} / ${escapeHtml(getPunchMachine(p).maxScore)} (${escapeHtml(formatComparableScore(getComparableScore(p)))})</td>
+            <td class="px-4 py-2.5 text-center">
+              <button type="button" class="text-rose-500 hover:text-rose-300 p-1 text-xs" title="Eliminar registro">
+                <svg class="w-4 h-4 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              </button>
+            </td>
+          `;
+          row.querySelector("button").addEventListener("click", () => deletePunch(p.id));
+          historyTableBody.appendChild(row);
+        });
+      }
+    }
+
+    // CHART.JS COMPARISON
+    function updateComparisonChart() {
+      const canvas = document.getElementById("punchComparisonChart");
+      if (!canvas) return;
+
+      const visiblePunches = getVisiblePunches();
+      document.getElementById("comparisonChartDescription").textContent = selectedMachineFilter === "all"
+        ? "Mejor golpe por mano y participante, normalizado al máximo de cada máquina; la calibración real puede variar."
+        : `Mejor golpe por mano y participante en ${getMachine(selectedMachineFilter).name}, en puntaje original.`;
+      const labels = [...players].filter(player => visiblePunches.some(punch => punch.player === player));
+      const rightScores = [];
+      const leftScores = [];
+
+      labels.forEach(p => {
+        const playerPunches = visiblePunches.filter(item => item.player === p);
+        const rScores = playerPunches.filter(i => i.hand === "Derecha").map(getComparableScore);
+        const lScores = playerPunches.filter(i => i.hand === "Izquierda").map(getComparableScore);
+
+        rightScores.push(rScores.length > 0 ? Math.max(...rScores) : 0);
+        leftScores.push(lScores.length > 0 ? Math.max(...lScores) : 0);
+      });
+
+      if (comparisonChartInstance) {
+        comparisonChartInstance.destroy();
+      }
+
+      const ctx = canvas.getContext("2d");
+      comparisonChartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: selectedMachineFilter === "all" ? "🥊 Mejor derecha (% máx.)" : "🥊 Mejor derecha (pts)",
+              data: rightScores,
+              backgroundColor: 'rgba(255, 26, 75, 0.75)',
+              borderColor: '#ff1a4b',
+              borderWidth: 1.5,
+              borderRadius: 6
+            },
+            {
+              label: selectedMachineFilter === "all" ? "⚡ Mejor izquierda (% máx.)" : "⚡ Mejor izquierda (pts)",
+              data: leftScores,
+              backgroundColor: 'rgba(0, 242, 254, 0.75)',
+              borderColor: '#00f2fe',
+              borderWidth: 1.5,
+              borderRadius: 6
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              labels: {
+                color: '#cbd5e1',
+                font: { family: 'Inter', size: 12, weight: 'bold' }
+              }
+            },
+            tooltip: {
+              backgroundColor: '#0f172a',
+              titleColor: '#fff',
+              bodyFont: { family: 'Inter' }
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(51, 65, 85, 0.25)' },
+              ticks: { color: '#94a3b8', font: { family: 'Inter', size: 11, weight: '600' } }
+            },
+            y: {
+              beginAtZero: true,
+              max: selectedMachineFilter === "all" ? 100 : getMachine(selectedMachineFilter)?.maxScore || 999,
+              grid: { color: 'rgba(51, 65, 85, 0.25)' },
+              ticks: { color: '#94a3b8', font: { family: 'Orbitron', size: 10 } }
+            }
+          }
+        }
+      });
+    }
+
+    // 4. ACTION HANDLERS & MODALS
+    function showToast(msg) {
+      const toast = document.getElementById("toastNotification");
+      const toastMsg = document.getElementById("toastMsg");
+      toastMsg.textContent = msg;
+      toast.classList.remove("translate-y-24", "opacity-0");
+      setTimeout(() => {
+        toast.classList.add("translate-y-24", "opacity-0");
+      }, 3000);
+    }
+
+    // Delete single punch
+    window.deletePunch = function(id) {
+      punches = punches.filter(p => p.id !== id);
+      savePunches();
+      refreshAllViews();
+      showToast("Registro de golpe eliminado.");
+    };
+
+    // DOM EVENT LISTENERS
+    document.addEventListener("DOMContentLoaded", () => {
+      initData();
+
+      // Default the date picker to the browser's local date.
+      const dateTodayInput = document.getElementById("punchDateInput");
+      dateTodayInput.value = selectedDate;
+
+      // Dropdown toggle
+      const btnMoreActions = document.getElementById("btnMoreActions");
+      const moreMenu = document.getElementById("moreMenu");
+      btnMoreActions.addEventListener("click", (e) => {
+        e.stopPropagation();
+        moreMenu.classList.toggle("hidden");
+      });
+      document.addEventListener("click", () => moreMenu.classList.add("hidden"));
+
+      // Date selector change
+      document.getElementById("dateFilter").addEventListener("change", (e) => {
+        selectedDate = e.target.value;
+        refreshAllViews();
+      });
+
+      document.getElementById("machineFilter").addEventListener("change", (e) => {
+        selectedMachineFilter = e.target.value;
+        refreshAllViews();
+      });
+
+      // Scope button toggle (Daily vs Historic)
+      const scopeDaily = document.getElementById("scopeDaily");
+      const scopeHistoric = document.getElementById("scopeHistoric");
+
+      scopeDaily.addEventListener("click", () => {
+        activeScope = "daily";
+        scopeDaily.className = "px-3 py-1.5 rounded-lg bg-punch-red text-white shadow transition-all";
+        scopeHistoric.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
+        renderLeaderboard();
+      });
+
+      scopeHistoric.addEventListener("click", () => {
+        activeScope = "historic";
+        scopeHistoric.className = "px-3 py-1.5 rounded-lg bg-punch-red text-white shadow transition-all";
+        scopeDaily.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
+        renderLeaderboard();
+      });
+
+      // Hand Tabs: Right, Left, Combined
+      const tabRight = document.getElementById("tabHandRight");
+      const tabLeft = document.getElementById("tabHandLeft");
+      const tabCombined = document.getElementById("tabHandCombined");
+
+      function updateHandTabsUI(active) {
+        activeHandTab = active;
+        [tabRight, tabLeft, tabCombined].forEach(tab => {
+          tab.className = "px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition-all";
+        });
+
+        if (active === "Right") {
+          tabRight.className = "px-3 py-1.5 rounded-lg bg-slate-800 text-punch-red border border-punch-red/40 font-bold transition-all";
+        } else if (active === "Left") {
+          tabLeft.className = "px-3 py-1.5 rounded-lg bg-slate-800 text-punch-cyan border border-punch-cyan/40 font-bold transition-all";
+        } else {
+          tabCombined.className = "px-3 py-1.5 rounded-lg bg-slate-800 text-punch-gold border border-punch-gold/40 font-bold transition-all";
+        }
+        renderLeaderboard();
+      }
+
+      tabRight.addEventListener("click", () => updateHandTabsUI("Right"));
+      tabLeft.addEventListener("click", () => updateHandTabsUI("Left"));
+      tabCombined.addEventListener("click", () => updateHandTabsUI("Combined"));
+
+      // Fighter Stats Selector
+      document.getElementById("selectFighterStats").addEventListener("change", (e) => {
+        selectedStatsPlayer = e.target.value;
+        renderBoxerStats();
+      });
+
+      // Modals setup
+      const modalPunch = document.getElementById("modalPunch");
+      const modalUser = document.getElementById("modalUser");
+      const modalMachine = document.getElementById("modalMachine");
+      let returnToPunchAfterMachine = false;
+
+      document.getElementById("btnOpenPunchModal").addEventListener("click", () => {
+        modalPunch.classList.remove("hidden");
+        document.getElementById("punchScoreInput").focus();
+      });
+
+      document.getElementById("btnClosePunchModal").addEventListener("click", () => {
+        modalPunch.classList.add("hidden");
+      });
+
+      const openMachineModal = returnToPunch => {
+        returnToPunchAfterMachine = returnToPunch;
+        renderMachineCatalog();
+        modalMachine.classList.remove("hidden");
+        document.getElementById("machineNameInput").focus();
+      };
+
+      document.getElementById("btnOpenMachineModal").addEventListener("click", () => {
+        openMachineModal(false);
+      });
+      document.getElementById("btnAddMachineFromPunch").addEventListener("click", () => {
+        openMachineModal(true);
+      });
+      document.getElementById("btnCloseMachineModal").addEventListener("click", () => {
+        modalMachine.classList.add("hidden");
+        if (returnToPunchAfterMachine) document.getElementById("punchMachineSelect").focus();
+      });
+      document.getElementById("formMachine").addEventListener("submit", event => {
+        event.preventDefault();
+        const name = document.getElementById("machineNameInput").value.trim();
+        const maxScore = Number(document.getElementById("machineMaximumInput").value);
+        if (!name || ![999, 9999].includes(maxScore)) {
+          showToast("Ingresa un nombre y una escala válida.");
+          return;
+        }
+
+        const existing = machines.find(machine =>
+          machine.name.toLocaleLowerCase() === name.toLocaleLowerCase() &&
+          machine.maxScore === maxScore
+        );
+        if (existing) {
+          document.getElementById("punchMachineSelect").value = existing.id;
+          updatePunchScoreConstraints();
+          showToast("Esa máquina ya está en el catálogo.");
+          return;
+        }
+
+        const machine = {
+          id: `machine_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`,
+          name,
+          maxScore
+        };
+        machines.push(machine);
+        saveMachines();
+        refreshAllViews();
+        document.getElementById("punchMachineSelect").value = machine.id;
+        updatePunchScoreConstraints();
+        document.getElementById("machineNameInput").value = "";
+        document.getElementById("machineMaximumInput").value = "999";
+        modalMachine.classList.add("hidden");
+        if (returnToPunchAfterMachine) {
+          modalPunch.classList.remove("hidden");
+          document.getElementById("punchScoreInput").focus();
+        }
+        showToast(`Máquina "${name}" agregada al catálogo.`);
+      });
+      document.getElementById("punchMachineSelect").addEventListener("change", updatePunchScoreConstraints);
+
+      document.getElementById("btnOpenUserModal").addEventListener("click", () => {
+        modalUser.classList.remove("hidden");
+        document.getElementById("newUserNameInput").focus();
+      });
+
+      document.getElementById("btnCloseUserModal").addEventListener("click", () => {
+        modalUser.classList.add("hidden");
+      });
+
+      // Form Submit: New Punch
+      document.getElementById("formPunch").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const player = document.getElementById("punchFighterSelect").value;
+        const hand = document.getElementById("punchHandSelect").value;
+        const attempt = parseInt(document.getElementById("punchAttemptInput").value, 10);
+        const score = parseInt(document.getElementById("punchScoreInput").value, 10);
+        const date = document.getElementById("punchDateInput").value;
+        const machineId = document.getElementById("punchMachineSelect").value;
+        const machine = getMachine(machineId);
+
+        if (!player || !machine || !Number.isInteger(score) || score < 0 ||
+            score > machine.maxScore || !Number.isInteger(attempt) || attempt < 1 || !date) {
+          showToast("Revisa máquina, puntaje, intento y fecha antes de guardar.");
+          return;
+        }
+
+        const newPunch = {
+          id: "p_" + Date.now(),
+          date: date,
+          player: player,
+          hand: hand,
+          attempt: attempt,
+          score: score,
+          machineId: machine.id
+        };
+
+        punches.push(newPunch);
+        savePunches();
+        selectedDate = date; // shift view to this date
+        selectedStatsPlayer = player;
+
+        modalPunch.classList.add("hidden");
+        document.getElementById("punchScoreInput").value = "";
+        document.getElementById("punchAttemptInput").value = attempt + 1; // auto increment attempt for convenience
+
+        refreshAllViews();
+        showToast(`💥 Golpe de ${score} pts registrado para ${player}!`);
+      });
+
+      // Form Submit: New Friend/Player
+      document.getElementById("formUser").addEventListener("submit", (e) => {
+        e.preventDefault();
+        const name = document.getElementById("newUserNameInput").value.trim();
+        if (!name) return;
+
+        if (!players.includes(name)) {
+          players.push(name);
+          players.sort();
+          savePlayers();
+          selectedStatsPlayer = name;
+          refreshAllViews();
+          showToast(`🥊 Boxeador "${name}" agregado al torneo.`);
+        } else {
+          showToast(`"${name}" ya existe en la lista.`);
+        }
+
+        document.getElementById("newUserNameInput").value = "";
+        modalUser.classList.add("hidden");
+      });
+
+      // Export JSON
+      document.getElementById("btnExportJSON").addEventListener("click", () => {
+        const payload = {
+          exportDate: new Date().toISOString(),
+          players: players,
+          punches: punches,
+          machines: machines
+        };
+        const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(payload, null, 2));
+        const downloadAnchor = document.createElement("a");
+        downloadAnchor.setAttribute("href", dataStr);
+        downloadAnchor.setAttribute("download", `punch_machine_data_${selectedDate}.json`);
+        document.body.appendChild(downloadAnchor);
+        downloadAnchor.click();
+        downloadAnchor.remove();
+        showToast("Archivo JSON exportado exitosamente.");
+      });
+
+      // Clear all locally stored dashboard data.
+      document.getElementById("btnResetData").addEventListener("click", () => {
+        if (!window.confirm("Se borrarán todos los participantes y golpes guardados en este navegador. ¿Continuar?")) {
+          return;
+        }
+
+        punches = [];
+        players = [];
+        machines = [];
+        selectedDate = getLocalDateString();
+        selectedStatsPlayer = "";
+        document.getElementById("punchDateInput").value = selectedDate;
+        savePunches();
+        savePlayers();
+        saveMachines();
+        refreshAllViews();
+        showToast("Se borraron todos los participantes y golpes.");
+      });
+
+      // Initial render
+      refreshAllViews();
+
+      // JSON IMPORT LOGIC
+      const importFileInput = document.getElementById("importFileInput");
+      importFileInput.addEventListener("change", (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const reader = new FileReader();
+        reader.onload = function(event) {
+          try {
+            const data = JSON.parse(event.target.result);
+            if (data && Array.isArray(data.punches)) {
+              const importedMachines = Array.isArray(data.machines)
+                ? data.machines.filter(machine =>
+                  machine && typeof machine.id === "string" &&
+                  typeof machine.name === "string" && machine.name.trim() &&
+                  [999, 9999].includes(machine.maxScore)
+                )
+                : [];
+              const machineIds = new Set(importedMachines.map(machine => machine.id));
+              const needsLegacy = data.punches.some(punch =>
+                punch && (!punch.machineId || !machineIds.has(punch.machineId))
+              );
+              if (needsLegacy && !machineIds.has(LEGACY_MACHINE_ID)) {
+                importedMachines.push({
+                  id: LEGACY_MACHINE_ID,
+                  name: "Máquina anterior sin identificar",
+                  maxScore: 999
+                });
+              }
+
+              const importedPunches = data.punches.map((punch, index) => {
+                const score = Number(punch?.score);
+                const machineId = machineIds.has(punch?.machineId)
+                  ? punch.machineId
+                  : LEGACY_MACHINE_ID;
+                const machine = importedMachines.find(entry => entry.id === machineId);
+                if (!punch || typeof punch.player !== "string" || !punch.player.trim() ||
+                    !Number.isInteger(score) || score < 0 || !machine || score > machine.maxScore ||
+                    !["Derecha", "Izquierda"].includes(punch.hand) ||
+                    typeof punch.date !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(punch.date)) {
+                  throw new Error(`Registro inválido en la posición ${index + 1}.`);
+                }
+                return {
+                  ...punch,
+                  id: typeof punch.id === "string" ? punch.id : `imported_${Date.now()}_${index}`,
+                  attempt: Number.isInteger(Number(punch.attempt)) && Number(punch.attempt) > 0
+                    ? Number(punch.attempt)
+                    : 1,
+                  score,
+                  machineId
+                };
+              });
+              const importedPlayers = Array.isArray(data.players)
+                ? data.players.filter(name => typeof name === "string" && name.trim())
+                : [];
+              const nextPlayers = [...new Set([
+                ...importedPlayers,
+                ...importedPunches.map(punch => punch.player)
+              ])].sort();
+
+              machines = importedMachines;
+              punches = importedPunches;
+              players = nextPlayers;
+              savePunches();
+              savePlayers();
+              saveMachines();
+              selectedStatsPlayer = players[0] || "";
+              refreshAllViews();
+              showToast(`Base de datos restaurada: ${punches.length} impactos cargados.`);
+            } else {
+              showToast("Error: El archivo JSON no tiene el formato esperado.");
+            }
+          } catch (err) {
+            showToast(err instanceof Error ? err.message : "Error al leer el archivo JSON. Formato inválido.");
+          }
+          importFileInput.value = ""; // reset input
+        };
+        reader.readAsText(file);
+      });
+    });
+  </script>
+</body>
+</html>
