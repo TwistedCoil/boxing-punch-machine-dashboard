@@ -94,4 +94,4 @@ Estas tendencias son recreativas y no demuestran una mejora física. Para interp
 
 ## Dependencias
 
-El HTML carga Tailwind CSS, Chart.js y fuentes de Google mediante CDN. Se requiere conexión a internet para cargar esos recursos. Chart.js y Tailwind tienen versión fijada e integridad SRI; las fuentes de Google no están incluidas localmente.
+El HTML incluye los estilos compilados de Tailwind CSS 3.4.17, por lo que su diseño funciona sin conexión y no depende del CDN de Tailwind. Chart.js 4.5.1 y las fuentes de Google se cargan desde CDN; se requiere conexión para mostrar los gráficos y las fuentes personalizadas. Si Chart.js no está disponible, los gráficos se ocultan con un aviso; el registro y las demás estadísticas siguen funcionando.
