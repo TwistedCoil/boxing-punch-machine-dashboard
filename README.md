@@ -68,17 +68,17 @@ Ejemplo de entrada del catálogo:
 - **Récord histórico:** mayor golpe registrado y mejor balance.
 - **Trofeos:** golpe más bajo, golpe más alto, mayor diferencia entre manos, mayor diferencia entre el golpe más alto y el más bajo de una persona, mejor simetría y mayor cantidad de intentos. El balance se calcula solo cuando hay registros de ambas manos; el trofeo de inconsistencia requiere al menos dos golpes.
 
-## Ejemplo histórico con seudónimos ficticios
+## Ejemplo histórico con nombres de personajes
 
-Antes de limpiar el dashboard, se verificó el conjunto original correspondiente al 30-10-2026. Estos valores se documentan como referencia histórica; no se cargan automáticamente. Los nombres siguientes son seudónimos ficticios inspirados en la estética de dibujos animados de los años 80 y no identifican a los participantes originales:
+Antes de limpiar el dashboard, se verificó el conjunto original correspondiente al 30-10-2026. Estos valores se documentan como referencia histórica; no se cargan automáticamente. Para no publicar los nombres de los participantes originales, se usan estos nombres de personajes: **Pierre Nodoyuna**, **Tiroloco McGrau**, **Agente Cobra**, **Porko Rosso** y **Pedro Picapiedra**.
 
 - 5 participantes y 15 golpes: 10 derechos y 5 izquierdos.
 - Suma de puntajes: **7.690**; promedio redondeado: **513 puntos**.
-- Campeón, mejor derecho, mejor izquierdo y récord histórico: **Garra Galáctica**, con 752 puntos a la derecha y 435 a la izquierda.
-- Mano de Pluma: **Tigre Cósmico**, con 273 puntos.
-- Mayor brecha entre manos: **Capitán Meteoro**, con 401 puntos (677 derecha y 276 izquierda).
-- Mayor diferencia entre intentos: **Capitán Meteoro**, con 401 puntos.
-- Mejor simetría: **Robot Rayo**, con 71% (429 / 605).
+- Campeón, mejor derecho, mejor izquierdo y récord histórico: **Pedro Picapiedra**, con 752 puntos a la derecha y 435 a la izquierda.
+- Mano de Pluma: **Porko Rosso**, con 273 puntos.
+- Mayor brecha entre manos: **Pierre Nodoyuna**, con 401 puntos (677 derecha y 276 izquierda).
+- Mayor diferencia entre intentos: **Pierre Nodoyuna**, con 401 puntos.
+- Mejor simetría: **Agente Cobra**, con 71% (429 / 605).
 - En intentos, todos registraron 3; el desempate del listado de Donante VIP usa el puntaje acumulado.
 - En el análisis de revancha, el primer intento derecho promedió **604** y el segundo **564** (**−40 puntos**); 2 participantes mejoraron y 3 bajaron.
 - La brecha media entre mejores manos fue de **295 puntos**. La media global (**513**) superó la mediana (**472**) por **41 puntos**.
