@@ -65,6 +65,10 @@ Ejemplo de entrada del catálogo:
 - **Asamblea de Brazos:** brecha promedio entre el mejor golpe de cada mano de participantes con ambas manos registradas; indica quién tuvo la brecha menor.
 - **Índice de Temblor:** desviación estándar de los puntajes; describe dispersión, pero no progreso.
 - **La Curva del Saco:** promedio por fecha separado por mano. En vista global usa porcentaje del máximo; con una máquina muestra puntaje bruto. Con una sola fecha indica que todavía no existe tendencia.
+- **The Eye of The Tiger:** variación porcentual del promedio de una sesión respecto de la anterior, por participante, mano y máquina. No compara equipos distintos; si el promedio anterior es cero, el porcentaje no se calcula.
+- **Niño Karate Kid:** promedio móvil de los últimos 3 y 5 intentos por participante, mano y máquina. En la vista global expresa los resultados como porcentaje del máximo del equipo.
+- **De aquí te veo Insecto:** compara el mejor golpe de la sesión más reciente con el récord de las hasta 5 sesiones anteriores, por participante, mano y máquina. Muestra si superó el récord o cuánto falta para vencerlo.
+- **SugarDaddy paga:** cuenta sesiones por participante, fecha y máquina; también muestra la mayor racha de días consecutivos y el promedio de intentos por sesión.
 - **Récord histórico:** mayor golpe registrado y mejor balance.
 - **Trofeos:** golpe más bajo, golpe más alto, mayor diferencia entre manos, mayor diferencia entre el golpe más alto y el más bajo de una persona, mejor simetría y mayor cantidad de intentos. El balance se calcula solo cuando hay registros de ambas manos; el trofeo de inconsistencia requiere al menos dos golpes.
 
@@ -86,14 +90,7 @@ Antes de limpiar el dashboard, se verificó el conjunto original correspondiente
 
 Estas métricas usan los datos ingresados y son recreativas, no inferencias sobre fuerza o condición física. La vista global normaliza por máximo, pero no elimina sesgos del equipo. Para tendencias temporales confiables se necesitan varias fechas por participante y la misma máquina. Los pares de revancha comparan solo intentos derechos 1 y 2 de la misma persona, fecha y máquina.
 
-## Ideas para futuras estadísticas
-
-- **El “¿Subí o me creo Rocky?”:** variación porcentual respecto de la sesión anterior, separada por mano y máquina.
-- **La Media que Entrena:** promedio móvil de los últimos 3 o 5 intentos por participante y mano, para distinguir progreso sostenido de un golpe excepcional.
-- **El Récord que te Mira Feo:** cuánto falta para superar el récord personal reciente de cada mano, en la misma máquina.
-- **El Calendario del Saco:** sesiones asistidas, días consecutivos jugando y evolución del número de intentos por sesión.
-
-Para interpretar tendencias conviene registrar varias sesiones por participante y mano en el mismo equipo. Un promedio móvil reduce el efecto de un único puntaje extremo.
+Estas tendencias son recreativas y no demuestran una mejora física. Para interpretarlas conviene registrar sesiones en fechas distintas, con la misma máquina y condiciones similares; normalizar porcentajes no elimina diferencias de calibración.
 
 ## Dependencias
 

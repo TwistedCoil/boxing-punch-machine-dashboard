@@ -540,6 +540,44 @@
         </article>
       </div>
 
+      <div>
+        <h4 class="font-arcade text-sm font-bold text-white">🏅 PROGRESO, RÉCORDS Y EXCUSAS NUEVAS</h4>
+        <p class="text-[11px] text-slate-400 mt-1">Las tendencias se comparan por persona, mano y máquina; así no se mezclan escalas ni sesiones de equipos distintos.</p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
+        <article class="bg-punch-panel border border-slate-800 rounded-2xl p-4">
+          <div class="text-2xl">🐅</div>
+          <h4 class="mt-2 text-sm font-arcade font-bold text-white">The Eye of The Tiger</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Cambio porcentual del promedio frente a la sesión anterior, por mano y máquina.</p>
+          <div id="eyeOfTigerValue" class="mt-3 text-xl font-black font-arcade text-punch-gold">--</div>
+          <p id="eyeOfTigerSummary" class="text-[11px] text-slate-400 mt-1">Se necesitan dos sesiones comparables.</p>
+        </article>
+
+        <article class="bg-punch-panel border border-slate-800 rounded-2xl p-4">
+          <div class="text-2xl">🥋</div>
+          <h4 class="mt-2 text-sm font-arcade font-bold text-white">Niño Karate Kid</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Promedio móvil de los últimos 3 y 5 intentos por participante, mano y máquina.</p>
+          <div id="karateKidValue" class="mt-3 text-xl font-black font-arcade text-punch-cyan">--</div>
+          <p id="karateKidSummary" class="text-[11px] text-slate-400 mt-1">Faltan intentos para calcular promedios móviles.</p>
+        </article>
+
+        <article class="bg-punch-panel border border-slate-800 rounded-2xl p-4">
+          <div class="text-2xl">🐜</div>
+          <h4 class="mt-2 text-sm font-arcade font-bold text-white">De aquí te veo Insecto</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Distancia al récord de las 5 sesiones anteriores, por mano y máquina.</p>
+          <div id="insectRecordValue" class="mt-3 text-xl font-black font-arcade text-rose-300">--</div>
+          <p id="insectRecordSummary" class="text-[11px] text-slate-400 mt-1">Se necesitan sesiones anteriores en la misma máquina.</p>
+        </article>
+
+        <article class="bg-punch-panel border border-slate-800 rounded-2xl p-4">
+          <div class="text-2xl">💸</div>
+          <h4 class="mt-2 text-sm font-arcade font-bold text-white">SugarDaddy paga</h4>
+          <p class="text-[11px] text-slate-400 mt-1">Sesiones, racha más larga de días jugando e intentos por sesión.</p>
+          <div id="sugarDaddyValue" class="mt-3 text-xl font-black font-arcade text-punch-gold">--</div>
+          <p id="sugarDaddySummary" class="text-[11px] text-slate-400 mt-1">Sin sesiones registradas.</p>
+        </article>
+      </div>
+
       <div class="bg-punch-panel border border-slate-800 rounded-2xl p-5 shadow-xl">
         <div class="mb-3">
           <h4 class="font-arcade text-sm font-bold text-white">LA CURVA DEL SACO (¿PROGRESO O PURO HUMO?)</h4>
@@ -1119,6 +1157,202 @@
         : sorted[middle];
     }
 
+    function groupPunchesBy(punchList, getKeyParts) {
+      const groups = new Map();
+      punchList.forEach(punch => {
+        const key = JSON.stringify(getKeyParts(punch));
+        if (!groups.has(key)) groups.set(key, []);
+        groups.get(key).push(punch);
+      });
+      return [...groups.values()];
+    }
+
+    function getSessionsForPunches(sessionPunches) {
+      const sessions = groupPunchesBy(sessionPunches, punch => [punch.date])
+        .map(datePunches => {
+          const scores = datePunches.map(getComparableScore).filter(Number.isFinite);
+          return {
+            date: datePunches[0].date,
+            punches: datePunches.length,
+            average: scores.reduce((sum, score) => sum + score, 0) / scores.length,
+            best: Math.max(...scores)
+          };
+        })
+        .sort((a, b) => a.date.localeCompare(b.date));
+      return sessions;
+    }
+
+    function renderNewTrendStats(visiblePunches) {
+      const renderLineList = (element, lines, emptyText) => {
+        element.textContent = lines.length ? lines.join(" · ") : emptyText;
+      };
+
+      const comparableSessions = groupPunchesBy(
+        visiblePunches,
+        punch => [punch.player, punch.machineId, punch.hand]
+      ).flatMap(sessionPunches => {
+        const sessions = getSessionsForPunches(sessionPunches);
+        return sessions.length < 2 ? [] : [{
+          player: sessionPunches[0].player,
+          hand: sessionPunches[0].hand,
+          machine: getPunchMachine(sessionPunches[0]).name,
+          previous: sessions[sessions.length - 2],
+          current: sessions[sessions.length - 1]
+        }];
+      }).filter(entry => entry.previous.average > 0);
+
+      const sessionChanges = comparableSessions.map(entry => ({
+        ...entry,
+        change: ((entry.current.average - entry.previous.average) / entry.previous.average) * 100
+      }));
+      const eyeValue = document.getElementById("eyeOfTigerValue");
+      const eyeSummary = document.getElementById("eyeOfTigerSummary");
+      if (sessionChanges.length) {
+        const averageChange = sessionChanges.reduce((sum, entry) => sum + entry.change, 0) / sessionChanges.length;
+        const improved = sessionChanges.filter(entry => entry.change > 0).length;
+        const declined = sessionChanges.filter(entry => entry.change < 0).length;
+        const unchanged = sessionChanges.length - improved - declined;
+        const bestChange = [...sessionChanges].sort((a, b) => b.change - a.change)[0];
+        eyeValue.textContent = `${averageChange > 0 ? "+" : ""}${averageChange.toFixed(1)}% promedio`;
+        renderLineList(eyeSummary, [
+          `${sessionChanges.length} comparaciones: ${improved} subieron, ${declined} bajaron, ${unchanged} igual`,
+          bestChange.change > 0
+            ? `Mayor mejora: ${bestChange.player} (${bestChange.hand}, ${bestChange.machine}, +${bestChange.change.toFixed(1)}%)`
+            : `Nadie mejoró; menor caída: ${bestChange.player} (${bestChange.hand}, ${bestChange.machine}, ${bestChange.change.toFixed(1)}%)`
+        ], "Sin sesiones comparables.");
+      } else {
+        eyeValue.textContent = "--";
+        eyeSummary.textContent = "Se necesitan dos sesiones y un promedio previo mayor que cero.";
+      }
+
+      const rollingAverages = groupPunchesBy(
+        visiblePunches,
+        punch => [punch.player, punch.machineId, punch.hand]
+      ).map(group => {
+        const ordered = [...group].sort((a, b) =>
+          a.date.localeCompare(b.date) ||
+          Number(a.attempt) - Number(b.attempt) ||
+          String(a.id).localeCompare(String(b.id))
+        );
+        const scores = ordered.map(getComparableScore).filter(Number.isFinite);
+        return {
+          player: group[0].player,
+          hand: group[0].hand,
+          machine: getPunchMachine(group[0]).name,
+          lastThree: scores.length >= 3
+            ? scores.slice(-3).reduce((sum, score) => sum + score, 0) / 3
+            : null,
+          lastFive: scores.length >= 5
+            ? scores.slice(-5).reduce((sum, score) => sum + score, 0) / 5
+            : null,
+          count: scores.length
+        };
+      }).filter(entry => entry.lastThree !== null)
+        .sort((a, b) => b.lastThree - a.lastThree);
+      const karateValue = document.getElementById("karateKidValue");
+      const karateSummary = document.getElementById("karateKidSummary");
+      if (rollingAverages.length) {
+        const leader = rollingAverages[0];
+        karateValue.textContent =
+          `3: ${formatComparableScore(leader.lastThree)} · 5: ${leader.lastFive === null ? "--" : formatComparableScore(leader.lastFive)}`;
+        renderLineList(karateSummary, rollingAverages.slice(0, 3).map(entry =>
+          `${entry.player} (${entry.hand}, ${entry.machine}) · ${entry.count} golpes`
+        ), "Faltan intentos.");
+      } else {
+        karateValue.textContent = "--";
+        karateSummary.textContent = "Se requieren al menos 3 intentos de la misma mano y máquina.";
+      }
+
+      const recentRecords = groupPunchesBy(
+        visiblePunches,
+        punch => [punch.player, punch.machineId, punch.hand]
+      ).flatMap(group => {
+        const sessions = getSessionsForPunches(group);
+        if (sessions.length < 2) return [];
+        const previousSessions = sessions.slice(0, -1).slice(-5);
+        const previousRecord = Math.max(...previousSessions.map(session => session.best));
+        const currentBest = sessions[sessions.length - 1].best;
+        const increment = selectedMachineFilter === "all"
+          ? 100 / getPunchMachine(group[0]).maxScore
+          : 1;
+        return [{
+          player: group[0].player,
+          hand: group[0].hand,
+          machine: getPunchMachine(group[0]).name,
+          previousRecord,
+          currentBest,
+          isRecord: currentBest > previousRecord,
+          gap: Math.max(0, previousRecord - currentBest + increment)
+        }];
+      }).sort((a, b) =>
+        Number(b.isRecord) - Number(a.isRecord) ||
+        a.gap - b.gap
+      );
+      const insectValue = document.getElementById("insectRecordValue");
+      const insectSummary = document.getElementById("insectRecordSummary");
+      if (recentRecords.length) {
+        const closest = recentRecords[0];
+        insectValue.textContent = closest.isRecord
+          ? `¡Nuevo récord! ${formatComparableScore(closest.currentBest)}`
+          : `Faltan ${selectedMachineFilter === "all" ? closest.gap.toFixed(2) + " pp" : Math.ceil(closest.gap) + " pts"}`;
+        renderLineList(insectSummary, recentRecords.slice(0, 3).map(entry =>
+          `${entry.player} (${entry.hand}, ${entry.machine}): ${entry.isRecord
+            ? "superó el récord previo"
+            : `récord ${formatComparableScore(entry.previousRecord)}, ahora ${formatComparableScore(entry.currentBest)}`}`
+        ), "No hay récords recientes que comparar.");
+      } else {
+        insectValue.textContent = "--";
+        insectSummary.textContent = "Se necesitan al menos dos sesiones de la misma mano y máquina.";
+      }
+
+      const attendanceSessions = groupPunchesBy(
+        visiblePunches,
+        punch => [punch.player, punch.machineId, punch.date]
+      );
+      const attendanceByPlayer = new Map();
+      attendanceSessions.forEach(session => {
+        const player = session[0].player;
+        if (!attendanceByPlayer.has(player)) attendanceByPlayer.set(player, new Set());
+        attendanceByPlayer.get(player).add(session[0].date);
+      });
+      const sessionCounts = [...attendanceByPlayer.entries()]
+        .map(([player, dates]) => ({ player, count: dates.size }))
+        .sort((a, b) => b.count - a.count);
+      const daysByPlayer = new Map();
+      attendanceSessions.forEach(session => {
+        const player = session[0].player;
+        if (!daysByPlayer.has(player)) daysByPlayer.set(player, new Set());
+        daysByPlayer.get(player).add(session[0].date);
+      });
+      let longestStreak = { player: "", days: 0 };
+      daysByPlayer.forEach((dateSet, player) => {
+        const dates = [...dateSet].sort();
+        let streak = 0;
+        let previousDay = null;
+        dates.forEach(date => {
+          const [year, month, day] = date.split("-").map(Number);
+          const currentDay = Date.UTC(year, month - 1, day) / 86400000;
+          streak = previousDay !== null && currentDay === previousDay + 1 ? streak + 1 : 1;
+          if (streak > longestStreak.days) longestStreak = { player, days: streak };
+          previousDay = currentDay;
+        });
+      });
+      const averageAttempts = attendanceSessions.length
+        ? visiblePunches.length / attendanceSessions.length
+        : 0;
+      const sugarValue = document.getElementById("sugarDaddyValue");
+      const sugarSummary = document.getElementById("sugarDaddySummary");
+      if (attendanceSessions.length) {
+        const attendanceLeader = sessionCounts[0];
+        sugarValue.textContent = `${attendanceSessions.length} sesiones · ${visiblePunches.length} golpes`;
+        sugarSummary.textContent =
+          `Más aplicado: ${attendanceLeader.player} (${attendanceLeader.count} días). Racha: ${longestStreak.days} días de ${longestStreak.player}. ${averageAttempts.toFixed(1)} golpes/sesión.`;
+      } else {
+        sugarValue.textContent = "--";
+        sugarSummary.textContent = "Sin sesiones registradas.";
+      }
+    }
+
     function renderFunStats() {
       const visiblePunches = getVisiblePunches();
       const scores = visiblePunches.map(getComparableScore).filter(Number.isFinite);
@@ -1227,6 +1461,7 @@
         scoreDeviationSummaryEl.textContent = "Sin golpes registrados.";
       }
 
+      renderNewTrendStats(visiblePunches);
       renderSessionTrendChart();
     }
 
