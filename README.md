@@ -7,7 +7,7 @@ Dashboard local para registrar y comparar los puntajes de una máquina de golpes
 1. Abre `punch_machine_arcade_dashboard.html` en un navegador.
 2. En **Máquinas**, agrega cada equipo una vez con un nombre/lugar y su máximo de pantalla (999 o 9999).
 3. Usa **+ Amigo / Boxeador** para agregar participantes.
-4. Usa **Registrar Golpe** y selecciona la máquina para guardar fecha, mano, intento y puntaje original.
+4. Usa **Registrar Golpe** y selecciona la máquina para guardar fecha, tipo de golpe (mano derecha, mano izquierda o pierna derecha), intento y puntaje original.
 5. Exporta periódicamente la base de datos JSON desde **Respaldos**.
 
 La aplicación inicia sin participantes ni golpes de demostración. La fecha del formulario se establece con la fecha local del equipo. El número de intento comienza en 1 y aumenta después de cada registro; se puede ajustar manualmente antes de guardar.
@@ -23,7 +23,7 @@ El filtro **Máquina** controla las comparaciones del dashboard:
 
 La vista global permite un ranking total aunque sea una comparación imperfecta. El porcentaje solo ajusta la escala máxima; **no corrige diferencias de calibración, sensibilidad, estado o algoritmo** entre máquinas. Para una comparación más justa y una tendencia personal confiable, usen el mismo equipo y condiciones similares.
 
-En **Todas · comparar %**, el ranking combinado suma los mejores porcentajes de ambas manos y puede llegar a 200%. Al filtrar una máquina concreta, suma sus puntajes brutos.
+En **Todas · comparar %**, el ranking combinado suma los mejores porcentajes de ambas manos y la pierna derecha y puede llegar a 300%. Al filtrar una máquina concreta, suma sus puntajes brutos.
 
 ## Datos y almacenamiento
 
@@ -34,7 +34,7 @@ Cada golpe tiene esta estructura:
   "id": "p_...",
   "date": "AAAA-MM-DD",
   "player": "Nombre del participante",
-  "hand": "Derecha",
+  "type": "Derecha",
   "attempt": 1,
   "score": 752,
   "machineId": "machine_..."
@@ -55,16 +55,17 @@ Ejemplo de entrada del catálogo:
 
 ## Estadísticas disponibles
 
-- **Podio diario:** campeón por mayor puntaje o porcentaje del máximo de la fecha elegida, mejor golpe derecho y mejor golpe izquierdo.
-- **Ranking:** día seleccionado o histórico; filtros por máquina, mano derecha, izquierda o combinado. En vista global, compara porcentajes del máximo; por equipo, puntajes brutos.
-- **Ficha individual:** máximos por mano, máquina y escala del récord, cantidad de golpes, promedio normalizado o bruto e historial borrable.
+- **Podio diario:** campeón por mayor puntaje o porcentaje del máximo de la fecha elegida, mejor mano derecha, mejor mano izquierda y mejor pierna derecha.
+- **Ranking:** día seleccionado o histórico; filtros por máquina, mano derecha, mano izquierda, pierna derecha o combinado. En vista global, compara porcentajes del máximo; por equipo, puntajes brutos.
+- **Ficha individual:** máximos por tipo de golpe, máquina y escala del récord, cantidad de golpes, promedio normalizado o bruto e historial borrable.
+- **Estadísticas de patadas:** “Cuidado con la manicure” identifica la mano más suave; “Piernas de mantequilla”, la patada más floja; “Puntete punta de fierro”, la patada más potente.
 - **Balance de manos:** `min(mejor derecha, mejor izquierda) / max(mejor derecha, mejor izquierda) × 100`. Se muestra solo cuando hay puntajes de ambas manos; el resultado va de 0% a 100%.
-- **Gráfico comparativo:** mejor golpe por mano y participante, en porcentaje global o puntos de la máquina filtrada.
+- **Gráfico comparativo:** mejor golpe por tipo y participante, en porcentaje global o puntos de la máquina filtrada.
 - **El “Ahora sí”:** diferencia promedio entre los intentos derechos 1 y 2, emparejados por participante, fecha y máquina; muestra cuántos mejoraron, bajaron o empataron.
 - **El Promedio Miente:** media y mediana de todos los golpes, además de cuánto se separan.
 - **Asamblea de Brazos:** brecha promedio entre el mejor golpe de cada mano de participantes con ambas manos registradas; indica quién tuvo la brecha menor.
 - **Índice de Temblor:** desviación estándar de los puntajes; describe dispersión, pero no progreso.
-- **La Curva del Saco:** promedio por fecha separado por mano. En vista global usa porcentaje del máximo; con una máquina muestra puntaje bruto. Con una sola fecha indica que todavía no existe tendencia.
+- **La Curva del Saco:** promedio por fecha separado por tipo de golpe. En vista global usa porcentaje del máximo; con una máquina muestra puntaje bruto. Con una sola fecha indica que todavía no existe tendencia.
 - **The Eye of The Tiger:** variación porcentual del promedio de una sesión respecto de la anterior, por participante, mano y máquina. No compara equipos distintos; si el promedio anterior es cero, el porcentaje no se calcula.
 - **Niño Karate Kid:** promedio móvil de los últimos 3 y 5 intentos por participante, mano y máquina. En la vista global expresa los resultados como porcentaje del máximo del equipo.
 - **De aquí te veo Insecto:** compara el mejor golpe de la sesión más reciente con el récord de las hasta 5 sesiones anteriores, por participante, mano y máquina. Muestra si superó el récord o cuánto falta para vencerlo.
@@ -88,7 +89,7 @@ Antes de limpiar el dashboard, se verificó el conjunto original correspondiente
 - La brecha media entre mejores manos fue de **295 puntos**. La media global (**513**) superó la mediana (**472**) por **41 puntos**.
 - La desviación estándar de los 15 puntajes fue aproximadamente **144 puntos**.
 
-Estas métricas usan los datos ingresados y son recreativas, no inferencias sobre fuerza o condición física. La vista global normaliza por máximo, pero no elimina sesgos del equipo. Para tendencias temporales confiables se necesitan varias fechas por participante y la misma máquina. Los pares de revancha comparan solo intentos derechos 1 y 2 de la misma persona, fecha y máquina.
+Los registros antiguos que usan el campo `hand` se conservan al cargar o importar; los nuevos respaldos usan `type`. Estas métricas usan los datos ingresados y son recreativas, no inferencias sobre fuerza o condición física. La vista global normaliza por máximo, pero no elimina sesgos del equipo. Para tendencias temporales confiables se necesitan varias fechas por participante y la misma máquina. Los pares de revancha comparan solo intentos derechos 1 y 2 de la misma persona, fecha y máquina.
 
 Estas tendencias son recreativas y no demuestran una mejora física. Para interpretarlas conviene registrar sesiones en fechas distintas, con la misma máquina y condiciones similares; normalizar porcentajes no elimina diferencias de calibración.
 
